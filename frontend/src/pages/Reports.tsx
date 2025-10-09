@@ -1,29 +1,27 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { BookOpen, Users, TrendingUp, AlertTriangle, Download, Settings, IndianRupee } from 'lucide-react';
 import { mockBorrowings } from '@/data/borrowings';
 import { mockBooks } from '@/data/books';
 import { mockGroups, mockUsers } from '@/data/groups';
 import type { FineSettings } from '@/types/fineSettings';
+import StatCard from '@/components/shared/StatCard';
+import PageHeader from '@/components/shared/PageHeader';
+import DataTable from '@/components/tables/DataTable';
+import FineSettingsForm from '@/components/forms/FineSettingsForm';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 export default function Reports() {
-  const [fineSettings, setFineSettings] = useState<FineSettings>({
+  const [fineSettings, setFineSettings] = useLocalStorage<FineSettings>('fineSettings', {
     lateFeePenalty: 50,
     missingBookPercentage: 200,
     smallDamagePercentage: 10,
     largeDamagePercentage: 50
   });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const { register, handleSubmit, reset } = useForm<FineSettings>({
-    defaultValues: fineSettings
-  });
 
   const totalBooks = mockBooks.length;
   const totalUsers = mockUsers.length;
@@ -32,10 +30,17 @@ export default function Reports() {
   const totalFines = mockBorrowings.reduce((sum, b) => sum + (b.fine || 0), 0);
   const totalGroups = mockGroups.length;
 
-  const onSubmitSettings = (data: FineSettings) => {
+  const handleFineSettingsSubmit = (data: FineSettings) => {
     setFineSettings(data);
     setIsSettingsOpen(false);
   };
+
+  const statsData = [
+    { title: 'Total Books', value: totalBooks, description: 'Available in catalog', icon: BookOpen },
+    { title: 'Active Users', value: totalUsers, description: 'Registered members', icon: Users },
+    { title: 'Active Borrowings', value: activeBorrowings, description: 'Currently borrowed', icon: TrendingUp },
+    { title: 'Overdue Items', value: overdueBorrowings, description: 'Need attention', icon: AlertTriangle, valueColor: 'text-red-600' }
+  ];
 
   const popularBooks = mockBooks
     .map(book => ({
@@ -49,19 +54,45 @@ export default function Reports() {
     .sort((a, b) => new Date(b.borrowedAt).getTime() - new Date(a.borrowedAt).getTime())
     .slice(0, 10);
 
+  const popularBooksColumns = [
+    { key: 'title', header: 'Title', render: (book: any) => <span className="font-medium">{book.title}</span> },
+    { key: 'author', header: 'Author' },
+    { key: 'borrowCount', header: 'Borrows', className: 'text-right', render: (book: any) => <Badge variant="secondary">{book.borrowCount}</Badge> }
+  ];
+
+  const recentBorrowingsColumns = [
+    { key: 'bookTitle', header: 'Book', render: (borrowing: any) => {
+      const book = mockBooks.find(b => b.id === borrowing.bookId);
+      return <span className="font-medium">{book?.title}</span>;
+    }},
+    { key: 'borrowerName', header: 'Borrower', render: (borrowing: any) => {
+      const user = mockUsers.find(u => u.id === borrowing.borrowerId);
+      return user?.name;
+    }},
+    { key: 'type', header: 'Type', render: (borrowing: any) => (
+      <Badge variant={borrowing.type === 'individual' ? 'default' : 'secondary'}>
+        {borrowing.type}
+      </Badge>
+    )},
+    { key: 'borrowedAt', header: 'Date', render: (borrowing: any) => borrowing.borrowedAt.toLocaleDateString() },
+    { key: 'dueDate', header: 'Due Date', render: (borrowing: any) => borrowing.dueDate.toLocaleDateString() },
+    { key: 'status', header: 'Status', render: (borrowing: any) => (
+      <Badge variant={
+        borrowing.status === 'active' ? 'default' :
+        borrowing.status === 'overdue' ? 'destructive' : 'secondary'
+      }>
+        {borrowing.status}
+      </Badge>
+    )}
+  ];
+
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-serif font-bold tracking-tight mb-4">
-              Reports & Analytics
-            </h1>
-            <p className="text-xl font-sans text-muted-foreground">
-              Library statistics and performance metrics
-            </p>
-          </div>
-          <div className="flex gap-3">
+      <PageHeader
+        title="Reports & Analytics"
+        description="Library statistics and performance metrics"
+        actions={
+          <>
             <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="lg">
@@ -73,115 +104,25 @@ export default function Reports() {
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-serif">Fine Management</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit(onSubmitSettings)} className="space-y-4">
-                  <div>
-                    <Label htmlFor="lateFeePenalty" className="text-base font-sans">Late Fee (per day)</Label>
-                    <div className="relative">
-                      <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="lateFeePenalty"
-                        type="number"
-                        {...register('lateFeePenalty', { required: true, min: 0 })}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="missingBookPercentage" className="text-base font-sans">Missing Book Fine (%)</Label>
-                    <Input
-                      id="missingBookPercentage"
-                      type="number"
-                      {...register('missingBookPercentage', { required: true, min: 0, max: 500 })}
-                      placeholder="200"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="smallDamagePercentage" className="text-base font-sans">Small Damage (%)</Label>
-                    <Input
-                      id="smallDamagePercentage"
-                      type="number"
-                      {...register('smallDamagePercentage', { required: true, min: 0, max: 100 })}
-                      placeholder="10"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="largeDamagePercentage" className="text-base font-sans">Large Damage (%)</Label>
-                    <Input
-                      id="largeDamagePercentage"
-                      type="number"
-                      {...register('largeDamagePercentage', { required: true, min: 0, max: 100 })}
-                      placeholder="50"
-                    />
-                  </div>
-                  <div className="flex gap-2 pt-4">
-                    <Button type="submit" className="flex-1">Save Settings</Button>
-                    <Button type="button" variant="outline" onClick={() => setIsSettingsOpen(false)} className="flex-1">
-                      Cancel
-                    </Button>
-                  </div>
-                </form>
+                <FineSettingsForm
+                  defaultValues={fineSettings}
+                  onSubmit={handleFineSettingsSubmit}
+                  onCancel={() => setIsSettingsOpen(false)}
+                />
               </DialogContent>
             </Dialog>
             <Button size="lg">
               <Download className="h-5 w-5 mr-2" />
               Export Report
             </Button>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Books</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalBooks}</div>
-            <p className="text-xs text-muted-foreground">
-              Available in catalog
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalUsers}</div>
-            <p className="text-xs text-muted-foreground">
-              Registered members
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Borrowings</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{activeBorrowings}</div>
-            <p className="text-xs text-muted-foreground">
-              Currently borrowed
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overdue Items</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{overdueBorrowings}</div>
-            <p className="text-xs text-muted-foreground">
-              Need attention
-            </p>
-          </CardContent>
-        </Card>
+        {statsData.map((stat, index) => (
+          <StatCard key={index} {...stat} />
+        ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -191,26 +132,11 @@ export default function Reports() {
             <CardDescription>Most borrowed books this month</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Author</TableHead>
-                  <TableHead className="text-right">Borrows</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {popularBooks.map((book) => (
-                  <TableRow key={book.id}>
-                    <TableCell className="font-medium">{book.title}</TableCell>
-                    <TableCell>{book.author}</TableCell>
-                    <TableCell className="text-right">
-                      <Badge variant="secondary">{book.borrowCount}</Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <DataTable
+              title=""
+              data={popularBooks}
+              columns={popularBooksColumns}
+            />
           </CardContent>
         </Card>
 
@@ -262,54 +188,11 @@ export default function Reports() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl font-serif">Recent Activity</CardTitle>
-          <CardDescription>Latest borrowing transactions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Book</TableHead>
-                <TableHead>Borrower</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentBorrowings.map((borrowing) => {
-                const book = mockBooks.find(b => b.id === borrowing.bookId);
-                const user = mockUsers.find(u => u.id === borrowing.borrowerId);
-                
-                return (
-                  <TableRow key={borrowing.id}>
-                    <TableCell className="font-medium">{book?.title}</TableCell>
-                    <TableCell>{user?.name}</TableCell>
-                    <TableCell>
-                      <Badge variant={borrowing.type === 'individual' ? 'default' : 'secondary'}>
-                        {borrowing.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{borrowing.borrowedAt.toLocaleDateString()}</TableCell>
-                    <TableCell>{borrowing.dueDate.toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <Badge variant={
-                        borrowing.status === 'active' ? 'default' :
-                        borrowing.status === 'overdue' ? 'destructive' : 'secondary'
-                      }>
-                        {borrowing.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <DataTable
+        title="Recent Activity"
+        data={recentBorrowings}
+        columns={recentBorrowingsColumns}
+      />
     </div>
   );
 }
