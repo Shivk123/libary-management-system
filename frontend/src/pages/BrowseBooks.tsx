@@ -2,11 +2,16 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Star } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Star, Clock, Users } from 'lucide-react';
 import { mockBooks, type Book } from '@/data/books';
+import { mockGroups } from '@/data/groups';
 
 export default function BrowseBooks() {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [borrowingType, setBorrowingType] = useState<'individual' | 'group'>('individual');
+  const [selectedGroup, setSelectedGroup] = useState<string>('');
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -96,7 +101,70 @@ export default function BrowseBooks() {
                     <h3 className="text-lg font-serif font-semibold mb-2">Available Copies</h3>
                     <p className="text-base font-sans">{selectedBook.count} copies</p>
                   </div>
-                  <Button className="w-full">Borrow Book</Button>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium font-sans mb-2 block">
+                        Borrowing Method
+                      </label>
+                      <Select value={borrowingType} onValueChange={(value: 'individual' | 'group') => setBorrowingType(value)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="individual">
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4" />
+                              Individual (30 days)
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="group">
+                            <div className="flex items-center gap-2">
+                              <Users className="h-4 w-4" />
+                              Group (6 months)
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {borrowingType === 'group' && (
+                      <div>
+                        <label className="text-sm font-medium font-sans mb-2 block">
+                          Select Group
+                        </label>
+                        <Select value={selectedGroup} onValueChange={setSelectedGroup}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose a group" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {mockGroups.map(group => (
+                              <SelectItem key={group.id} value={group.id}>
+                                {group.name} ({group.members.length} members)
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant={borrowingType === 'individual' ? 'default' : 'secondary'}>
+                          {borrowingType === 'individual' ? '30 days limit' : '6 months limit'}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Late returns incur fines. Missing books are charged even if returned later.
+                      </p>
+                    </div>
+                    
+                    <Button 
+                      className="w-full" 
+                      disabled={borrowingType === 'group' && !selectedGroup}
+                    >
+                      Borrow Book
+                    </Button>
+                  </div>
                 </div>
               </div>
               <div className="space-y-4 mt-6">

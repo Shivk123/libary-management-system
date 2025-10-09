@@ -1,13 +1,17 @@
 import { useState } from 'react';
-import { Search, BookOpen, Clock, Bookmark, User } from 'lucide-react';
+import { Search, BookOpen, Clock, User, Users } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardHome from '@/components/layout/DashboardHome';
 import BrowseBooks from './BrowseBooks';
+import Groups from './Groups';
+import MyBorrowings from './MyBorrowings';
+import History from './History';
+import Profile from './Profile';
 
 const menuItems = [
   { title: 'Browse Books', icon: Search, key: 'browse' },
+  { title: 'My Groups', icon: Users, key: 'groups' },
   { title: 'My Borrowings', icon: BookOpen, key: 'borrowings' },
-  { title: 'Reservations', icon: Bookmark, key: 'reservations' },
   { title: 'History', icon: Clock, key: 'history' },
   { title: 'Profile', icon: User, key: 'profile' },
 ];
@@ -23,16 +27,16 @@ export default function UserDashboard() {
       onClick: () => setActiveView('browse')
     },
     {
-      title: 'My Borrowings',
-      description: 'View and manage your current and past book borrowings',
-      icon: BookOpen,
-      onClick: () => setActiveView('borrowings')
+      title: 'My Groups',
+      description: 'Create and manage borrowing groups for extended loan periods',
+      icon: Users,
+      onClick: () => setActiveView('groups')
     },
     {
-      title: 'Reservations',
-      description: 'Reserve books and manage your waiting list preferences',
-      icon: Bookmark,
-      onClick: () => setActiveView('reservations')
+      title: 'My Borrowings',
+      description: 'View and manage your current book borrowings and due dates',
+      icon: BookOpen,
+      onClick: () => setActiveView('borrowings')
     }
   ];
 
@@ -40,6 +44,14 @@ export default function UserDashboard() {
     switch (activeView) {
       case 'browse':
         return <BrowseBooks />;
+      case 'groups':
+        return <Groups />;
+      case 'borrowings':
+        return <MyBorrowings />;
+      case 'history':
+        return <History />;
+      case 'profile':
+        return <Profile />;
       case 'dashboard':
         return (
           <DashboardHome
