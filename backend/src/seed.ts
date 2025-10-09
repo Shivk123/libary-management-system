@@ -23,7 +23,8 @@ async function main() {
         comment: 'A masterpiece of American literature that captures the essence of the 1920s.',
         review: 4.5,
         count: 12,
-        image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop'
+        image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=400&fit=crop',
+        price: 500
       }
     }),
     prisma.book.create({
@@ -34,7 +35,8 @@ async function main() {
         comment: 'An essential read that addresses important social issues with grace and power.',
         review: 4.8,
         count: 8,
-        image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&h=400&fit=crop'
+        image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&h=400&fit=crop',
+        price: 450
       }
     }),
     prisma.book.create({
@@ -45,7 +47,8 @@ async function main() {
         comment: 'A chilling and prophetic vision of a world under constant surveillance.',
         review: 4.7,
         count: 15,
-        image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop'
+        image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=400&fit=crop',
+        price: 400
       }
     }),
     prisma.book.create({
@@ -56,7 +59,8 @@ async function main() {
         comment: 'Witty and romantic, a timeless story of love overcoming social barriers.',
         review: 4.6,
         count: 10,
-        image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&h=400&fit=crop'
+        image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&h=400&fit=crop',
+        price: 350
       }
     }),
     prisma.book.create({
@@ -67,7 +71,8 @@ async function main() {
         comment: 'A controversial yet influential novel about teenage rebellion and alienation.',
         review: 4.2,
         count: 6,
-        image: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop'
+        image: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=300&h=400&fit=crop',
+        price: 300
       }
     }),
     prisma.book.create({
@@ -78,7 +83,8 @@ async function main() {
         comment: 'A powerful allegory about human nature and the thin veneer of civilization.',
         review: 4.3,
         count: 9,
-        image: 'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=300&h=400&fit=crop'
+        image: 'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=300&h=400&fit=crop',
+        price: 380
       }
     })
   ]);

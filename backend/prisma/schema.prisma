@@ -28,6 +28,7 @@ model Book {
   review  Float
   count   Int
   image   String
+  price   Float  @default(0)
 
   borrowings Borrowing[]
 }
@@ -70,4 +71,13 @@ model Borrowing {
   book     Book   @relation(fields: [bookId], references: [id])
   borrower User   @relation(fields: [borrowerId], references: [id])
   group    Group? @relation(fields: [groupId], references: [id])
+}
+
+model FineSettings {
+  id                     String @id @default(cuid())
+  lateFeePenalty         Float  @default(5)
+  missingBookPercentage  Float  @default(200)
+  smallDamagePercentage  Float  @default(10)
+  largeDamagePercentage  Float  @default(50)
+  updatedAt              DateTime @updatedAt
 }

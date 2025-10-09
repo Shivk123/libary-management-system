@@ -1,17 +1,32 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Star, Clock, Users } from 'lucide-react';
-import { mockBooks, type Book } from '@/data/books';
-import { mockGroups } from '@/data/groups';
+import { Star, Clock, Users, Search } from 'lucide-react';
+import { useBooks } from '@/hooks/useBooks';
+import { useGroups } from '@/hooks/useGroups';
+import { borrowingService } from '@/services/borrowingService';
+import { userService } from '@/services/userService';
+import type { Book } from '@/data/books';
 
 export default function BrowseBooks() {
+  const { books, loading, error } = useBooks();
+  const { groups } = useGroups();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [borrowingType, setBorrowingType] = useState<'individual' | 'group'>('individual');
   const [selectedGroup, setSelectedGroup] = useState<string>('');
+  const [borrowing, setBorrowing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredBooks = useMemo(() => {
+    return books.filter(book => 
+      book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      book.author.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [books, searchTerm]);
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -22,6 +37,34 @@ export default function BrowseBooks() {
         }`}
       />
     ));
+  };
+
+  const handleBorrowBook = async () => {
+    if (!selectedBook) return;
+    
+    setBorrowing(true);
+    try {
+      const currentUser = userService.getCurrentUser();
+      
+      await borrowingService.borrowBook({
+        bookId: selectedBook.id,
+        borrowerId: currentUser.id,
+        type: borrowingType,
+        groupId: borrowingType === 'group' ? selectedGroup : undefined,
+      });
+      
+      // Close dialog and reset state
+      setSelectedBook(null);
+      setBorrowingType('individual');
+      setSelectedGroup('');
+      
+      alert('Book borrowed successfully!');
+    } catch (err) {
+      console.error('Failed to borrow book:', err);
+      alert('Failed to borrow book. Please try again.');
+    } finally {
+      setBorrowing(false);
+    }
   };
 
   return (
@@ -35,8 +78,23 @@ export default function BrowseBooks() {
         </p>
       </div>
 
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search books by title or author..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
+
+      {loading && <div>Loading books...</div>}
+      {error && <div>Error: {error}</div>}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {mockBooks.map((book) => (
+        {filteredBooks.map((book) => (
           <Card
             key={book.id}
             className="cursor-pointer hover:shadow-lg transition-shadow"
@@ -137,9 +195,9 @@ export default function BrowseBooks() {
                             <SelectValue placeholder="Choose a group" />
                           </SelectTrigger>
                           <SelectContent>
-                            {mockGroups.map(group => (
+                            {groups.map(group => (
                               <SelectItem key={group.id} value={group.id}>
-                                {group.name} ({group.members.length} members)
+                                {group.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -160,9 +218,10 @@ export default function BrowseBooks() {
                     
                     <Button 
                       className="w-full" 
-                      disabled={borrowingType === 'group' && !selectedGroup}
+                      disabled={(borrowingType === 'group' && !selectedGroup) || borrowing || selectedBook.count === 0}
+                      onClick={handleBorrowBook}
                     >
-                      Borrow Book
+                      {borrowing ? 'Borrowing...' : selectedBook.count === 0 ? 'Out of Stock' : 'Borrow Book'}
                     </Button>
                   </div>
                 </div>

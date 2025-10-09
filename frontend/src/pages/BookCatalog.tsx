@@ -7,9 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Star, Edit } from 'lucide-react';
-import { mockBooks, type Book } from '@/data/books';
+import { useBooks } from '@/hooks/useBooks';
+import type { Book } from '@/data/books';
 
 export default function BookCatalog() {
+  const { books, loading, error, updateBook } = useBooks();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   
@@ -34,11 +36,17 @@ export default function BookCatalog() {
     });
   };
 
-  const onSubmit = (data: Book) => {
-    console.log('Updated book:', data);
-    setIsEditing(false);
-    setSelectedBook(null);
-    reset();
+  const onSubmit = async (data: Book) => {
+    if (!selectedBook) return;
+    
+    try {
+      await updateBook(selectedBook.id, data);
+      setIsEditing(false);
+      setSelectedBook(null);
+      reset();
+    } catch (err) {
+      console.error('Failed to update book:', err);
+    }
   };
 
   const handleCloseModal = () => {
@@ -58,8 +66,11 @@ export default function BookCatalog() {
         </p>
       </div>
 
+      {loading && <div>Loading books...</div>}
+      {error && <div>Error: {error}</div>}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {mockBooks.map((book) => (
+        {books.map((book) => (
           <Card key={book.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="p-0">
               <img
