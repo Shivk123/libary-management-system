@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Star, Clock, Users, Search } from 'lucide-react';
 import { useBooks } from '@/hooks/useBooks';
 import { useGroups } from '@/hooks/useGroups';
+import { useBorrowings } from '@/hooks/useBorrowings';
 import { borrowingService } from '@/services/borrowingService';
 import { userService } from '@/services/userService';
 import type { Book } from '@/data/books';
@@ -15,6 +16,7 @@ import type { Book } from '@/data/books';
 export default function BrowseBooks() {
   const { books, loading, error } = useBooks();
   const { groups } = useGroups();
+  const { borrowings } = useBorrowings();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [borrowingType, setBorrowingType] = useState<'individual' | 'group'>('individual');
   const [selectedGroup, setSelectedGroup] = useState<string>('');
@@ -27,6 +29,10 @@ export default function BrowseBooks() {
       book.author.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [books, searchTerm]);
+
+  const isBookAlreadyBorrowed = (bookId: string) => {
+    return borrowings.some(b => b.bookId === bookId && (b.status === 'active' || b.status === 'overdue'));
+  };
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -59,9 +65,10 @@ export default function BrowseBooks() {
       setSelectedGroup('');
       
       alert('Book borrowed successfully!');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to borrow book:', err);
-      alert('Failed to borrow book. Please try again.');
+      const errorMessage = err.response?.data?.error || 'Failed to borrow book. Please try again.';
+      alert(errorMessage);
     } finally {
       setBorrowing(false);
     }
@@ -118,9 +125,16 @@ export default function BrowseBooks() {
                 <div className="flex">{renderStars(book.review)}</div>
                 <span className="text-sm font-sans">{book.review}</span>
               </div>
-              <p className="text-sm font-sans text-muted-foreground">
-                {book.count} available
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-sans text-muted-foreground">
+                  {book.count} available
+                </p>
+                {isBookAlreadyBorrowed(book.id) && (
+                  <Badge variant="secondary" className="text-xs">
+                    Borrowed
+                  </Badge>
+                )}
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -218,10 +232,13 @@ export default function BrowseBooks() {
                     
                     <Button 
                       className="w-full" 
-                      disabled={(borrowingType === 'group' && !selectedGroup) || borrowing || selectedBook.count === 0}
+                      disabled={(borrowingType === 'group' && !selectedGroup) || borrowing || selectedBook.count === 0 || isBookAlreadyBorrowed(selectedBook.id)}
                       onClick={handleBorrowBook}
                     >
-                      {borrowing ? 'Borrowing...' : selectedBook.count === 0 ? 'Out of Stock' : 'Borrow Book'}
+                      {borrowing ? 'Borrowing...' : 
+                       selectedBook.count === 0 ? 'Out of Stock' : 
+                       isBookAlreadyBorrowed(selectedBook.id) ? 'Already Borrowed' : 
+                       'Borrow Book'}
                     </Button>
                   </div>
                 </div>

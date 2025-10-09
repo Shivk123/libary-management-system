@@ -2,16 +2,28 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Clock, Users, AlertTriangle, CheckCircle, IndianRupee } from 'lucide-react';
-import { mockBorrowings } from '@/data/borrowings';
-import { mockBooks } from '@/data/books';
-import { mockGroups } from '@/data/groups';
+import { useBorrowings } from '@/hooks/useBorrowings';
+import { borrowingService } from '@/services/borrowingService';
 import { calculateFine } from '@/utils/fineCalculator';
+import { useState } from 'react';
 
 export default function MyBorrowings() {
-  const activeBorrowings = mockBorrowings.filter(b => b.status === 'active' || b.status === 'overdue');
+  const { borrowings, loading, error, refetch } = useBorrowings();
+  const [returning, setReturning] = useState<string | null>(null);
+  const activeBorrowings = borrowings.filter(b => b.status === 'active' || b.status === 'overdue');
 
-  const getBook = (bookId: string) => mockBooks.find(b => b.id === bookId);
-  const getGroup = (groupId?: string) => groupId ? mockGroups.find(g => g.id === groupId) : null;
+  const handleReturnBook = async (borrowingId: string) => {
+    setReturning(borrowingId);
+    try {
+      await borrowingService.returnBook(borrowingId);
+      await refetch(); // Refresh the borrowings list
+    } catch (err) {
+      console.error('Failed to return book:', err);
+      alert('Failed to return book. Please try again.');
+    } finally {
+      setReturning(null);
+    }
+  };
 
   const getStatusBadge = (borrowing: any) => {
     switch (borrowing.status) {
@@ -24,16 +36,17 @@ export default function MyBorrowings() {
     }
   };
 
-  const getDaysRemaining = (dueDate: Date) => {
+  const getDaysRemaining = (dueDate: string) => {
     const today = new Date();
-    const diffTime = dueDate.getTime() - today.getTime();
+    const due = new Date(dueDate);
+    const diffTime = due.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
 
-  const getFineDetails = (borrowing: any, book: any) => {
-    if (!book) return { totalFine: 0, daysLate: 0 };
-    return calculateFine(borrowing.dueDate, null, book.price, 0);
+  const getFineDetails = (borrowing: any) => {
+    if (!borrowing.book) return { totalFine: 0, daysLate: 0 };
+    return calculateFine(new Date(borrowing.dueDate), null, borrowing.book.price, 0);
   };
 
   return (
@@ -47,12 +60,15 @@ export default function MyBorrowings() {
         </p>
       </div>
 
+      {loading && <div>Loading borrowings...</div>}
+      {error && <div>Error: {error}</div>}
+      
       <div className="space-y-6">
         {activeBorrowings.map((borrowing) => {
-          const book = getBook(borrowing.bookId);
-          const group = getGroup(borrowing.groupId);
+          const book = borrowing.book;
+          const group = borrowing.group;
           const daysRemaining = getDaysRemaining(borrowing.dueDate);
-          const fineDetails = getFineDetails(borrowing, book);
+          const fineDetails = getFineDetails(borrowing);
           
           if (!book) return null;
 
@@ -93,13 +109,13 @@ export default function MyBorrowings() {
                   <div>
                     <p className="font-medium font-sans">Borrowed</p>
                     <p className="text-muted-foreground">
-                      {borrowing.borrowedAt.toLocaleDateString()}
+                      {new Date(borrowing.borrowedAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div>
                     <p className="font-medium font-sans">Due Date</p>
                     <p className="text-muted-foreground">
-                      {borrowing.dueDate.toLocaleDateString()}
+                      {new Date(borrowing.dueDate).toLocaleDateString()}
                     </p>
                   </div>
                   <div>
@@ -133,11 +149,15 @@ export default function MyBorrowings() {
                 )}
                 
                 <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1">
+                  <Button variant="outline" className="flex-1" disabled>
                     Extend Loan
                   </Button>
-                  <Button className="flex-1">
-                    Return Book
+                  <Button 
+                    className="flex-1"
+                    onClick={() => handleReturnBook(borrowing.id)}
+                    disabled={returning === borrowing.id}
+                  >
+                    {returning === borrowing.id ? 'Returning...' : 'Return Book'}
                   </Button>
                 </div>
               </CardContent>

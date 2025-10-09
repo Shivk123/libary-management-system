@@ -24,6 +24,19 @@ router.post('/', async (req, res) => {
   try {
     const { bookId, borrowerId, type, groupId } = req.body;
     
+    // Check if user already has this book borrowed
+    const existingBorrowing = await prisma.borrowing.findFirst({
+      where: {
+        bookId,
+        borrowerId,
+        status: { in: ['active', 'overdue'] }
+      }
+    });
+    
+    if (existingBorrowing) {
+      return res.status(400).json({ error: 'You have already borrowed this book' });
+    }
+    
     // Calculate due date (30 days for individual, 6 months for group)
     const dueDate = new Date();
     if (type === 'individual') {

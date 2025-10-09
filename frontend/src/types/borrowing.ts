@@ -15,9 +15,20 @@ export interface Borrowing {
   borrowerId: string;
   type: BorrowingType;
   groupId?: string;
-  borrowedAt: Date;
-  dueDate: Date;
-  returnedAt?: Date;
+  borrowedAt: string;
+  dueDate: string;
+  returnedAt?: string;
   status: 'active' | 'returned' | 'overdue' | 'missing';
   fine?: number;
+  book?: {
+    id: string;
+    title: string;
+    author: string;
+    image: string;
+    price: number;
+  };
+  group?: {
+    id: string;
+    name: string;
+  };
 }

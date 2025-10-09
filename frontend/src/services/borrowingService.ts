@@ -18,4 +18,9 @@ export const borrowingService = {
     const response = await api.get(`/borrowings/user/${userId}`);
     return response.data;
   },
+
+  async returnBook(borrowingId: string): Promise<Borrowing> {
+    const response = await api.put(`/borrowings/${borrowingId}/return`);
+    return response.data;
+  },
 };
