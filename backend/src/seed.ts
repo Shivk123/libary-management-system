@@ -3,14 +3,24 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create users
+  // Create admin user
+  const admin = await prisma.user.create({ 
+    data: { 
+      name: 'Admin User', 
+      email: 'admin@library.com', 
+      password: 'admin123',
+      role: 'admin'
+    } 
+  });
+
+  // Create regular users
   const users = await Promise.all([
-    prisma.user.create({ data: { name: 'John Doe', email: 'john@example.com' } }),
-    prisma.user.create({ data: { name: 'Jane Smith', email: 'jane@example.com' } }),
-    prisma.user.create({ data: { name: 'Mike Johnson', email: 'mike@example.com' } }),
-    prisma.user.create({ data: { name: 'Sarah Wilson', email: 'sarah@example.com' } }),
-    prisma.user.create({ data: { name: 'Tom Brown', email: 'tom@example.com' } }),
-    prisma.user.create({ data: { name: 'Lisa Davis', email: 'lisa@example.com' } })
+    prisma.user.create({ data: { name: 'John Doe', email: 'john@example.com', password: 'john123' } }),
+    prisma.user.create({ data: { name: 'Jane Smith', email: 'jane@example.com', password: 'jane123' } }),
+    prisma.user.create({ data: { name: 'Mike Johnson', email: 'mike@example.com', password: 'mike123' } }),
+    prisma.user.create({ data: { name: 'Sarah Wilson', email: 'sarah@example.com', password: 'sarah123' } }),
+    prisma.user.create({ data: { name: 'Tom Brown', email: 'tom@example.com', password: 'tom123' } }),
+    prisma.user.create({ data: { name: 'Lisa Davis', email: 'lisa@example.com', password: 'lisa123' } })
   ]);
 
   // Create books

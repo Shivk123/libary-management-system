@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Users, Plus, UserPlus } from 'lucide-react';
-import { mockGroups, mockUsers } from '@/data/groups';
+import { useGroups } from '@/hooks/useGroups';
+import { userService } from '@/services/userService';
 import type { Group } from '@/types/borrowing';
 
 interface GroupFormData {
@@ -18,25 +19,24 @@ interface GroupFormData {
 }
 
 export default function Groups() {
-  const [groups, setGroups] = useState(mockGroups);
+  const { groups, loading, error } = useGroups();
+  const [users, setUsers] = useState<any[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const { register, handleSubmit, reset, watch, setValue } = useForm<GroupFormData>();
+  const { register, handleSubmit, reset } = useForm<GroupFormData>();
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const currentUser = userService.getCurrentUser();
 
-  const onSubmit = (data: GroupFormData) => {
-    const newGroup: Group = {
-      id: Date.now().toString(),
-      name: data.name,
-      description: data.description,
-      createdBy: '1',
-      members: ['1', ...selectedMembers],
-      createdAt: new Date()
-    };
-    
-    setGroups([...groups, newGroup]);
-    setIsCreateOpen(false);
-    reset();
-    setSelectedMembers([]);
+  const onSubmit = async (data: GroupFormData) => {
+    try {
+      // For now, just show success message - full implementation would create group via API
+      alert('Group creation functionality will be implemented soon!');
+      setIsCreateOpen(false);
+      reset();
+      setSelectedMembers([]);
+    } catch (err) {
+      console.error('Failed to create group:', err);
+      alert('Failed to create group. Please try again.');
+    }
   };
 
   const toggleMember = (userId: string) => {
@@ -47,8 +47,8 @@ export default function Groups() {
     );
   };
 
-  const getMemberNames = (memberIds: string[]) => {
-    return memberIds.map(id => mockUsers.find(u => u.id === id)?.name).filter(Boolean);
+  const getMemberNames = (members: any[]) => {
+    return members.map(member => member.user?.name || 'Unknown').filter(Boolean);
   };
 
   return (
@@ -101,23 +101,10 @@ export default function Groups() {
                   <p className="text-sm text-muted-foreground mb-3">
                     Groups need 3-6 members total (including you)
                   </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {mockUsers.filter(u => u.id !== '1').map(user => (
-                      <div
-                        key={user.id}
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                          selectedMembers.includes(user.id)
-                            ? 'bg-primary text-primary-foreground'
-                            : 'hover:bg-muted'
-                        }`}
-                        onClick={() => toggleMember(user.id)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <UserPlus className="h-4 w-4" />
-                          <span className="text-sm font-sans">{user.name}</span>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="p-3 border rounded-lg bg-muted">
+                    <p className="text-sm text-muted-foreground">
+                      Member selection will be available in the full implementation.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -143,6 +130,9 @@ export default function Groups() {
         </Dialog>
       </div>
 
+      {loading && <div>Loading groups...</div>}
+      {error && <div>Error: {error}</div>}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {groups.map((group) => (
           <Card key={group.id} className="hover:shadow-lg transition-shadow">
@@ -158,10 +148,10 @@ export default function Groups() {
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm font-sans font-medium mb-2">
-                  Members ({group.members.length})
+                  Members ({group.members?.length || 0})
                 </p>
                 <div className="flex flex-wrap gap-1">
-                  {getMemberNames(group.members).map((name, index) => (
+                  {getMemberNames(group.members || []).map((name, index) => (
                     <Badge key={index} variant="secondary" className="text-xs">
                       {name}
                     </Badge>
@@ -169,7 +159,7 @@ export default function Groups() {
                 </div>
               </div>
               <div className="text-xs text-muted-foreground">
-                Created {group.createdAt.toLocaleDateString()}
+                Created {new Date(group.createdAt).toLocaleDateString()}
               </div>
               <div className="pt-2">
                 <Badge variant="outline" className="text-xs">
