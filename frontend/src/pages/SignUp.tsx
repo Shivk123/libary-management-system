@@ -27,18 +27,18 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-3 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="space-y-4 text-center pb-6">
           <CardTitle className="text-3xl font-serif font-bold tracking-tight">
             Join our library
           </CardTitle>
-          <CardDescription className="text-base font-sans leading-relaxed">
+          <CardDescription className="text-base font-sans leading-relaxed text-muted-foreground">
             Create your account to get started
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <CardContent className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium font-sans">
                 Full name
@@ -47,7 +47,7 @@ export default function SignUp() {
                 id="name"
                 type="text"
                 placeholder="John Doe"
-                className="font-sans"
+                className="font-sans h-11"
                 value={formData.name}
                 onChange={handleChange}
                 required
@@ -61,7 +61,7 @@ export default function SignUp() {
                 id="email"
                 type="email"
                 placeholder="name@example.com"
-                className="font-sans"
+                className="font-sans h-11"
                 value={formData.email}
                 onChange={handleChange}
                 required
@@ -75,17 +75,17 @@ export default function SignUp() {
                 id="password"
                 type="password"
                 placeholder="Create a secure password"
-                className="font-sans"
+                className="font-sans h-11"
                 value={formData.password}
                 onChange={handleChange}
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full h-11 mt-6">
               Create account
             </Button>
           </form>
-          <div className="text-center">
+          <div className="text-center pt-4 border-t">
             <p className="text-sm font-sans text-muted-foreground">
               Already have an account?{' '}
               <Link 
