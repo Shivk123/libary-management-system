@@ -1,15 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Users, CheckCircle, XCircle } from 'lucide-react';
-import { mockBorrowings } from '@/data/borrowings';
-import { mockBooks } from '@/data/books';
-import { mockGroups } from '@/data/groups';
+import { useBorrowings } from '@/hooks/useBorrowings';
 
 export default function History() {
-  const historyBorrowings = mockBorrowings.filter(b => b.status === 'returned' || b.status === 'missing');
-
-  const getBook = (bookId: string) => mockBooks.find(b => b.id === bookId);
-  const getGroup = (groupId?: string) => groupId ? mockGroups.find(g => g.id === groupId) : null;
+  const { borrowings, loading, error } = useBorrowings();
+  const historyBorrowings = borrowings.filter(b => b.status === 'returned' || b.status === 'missing');
 
   const getStatusBadge = (borrowing: any) => {
     switch (borrowing.status) {
@@ -44,10 +40,13 @@ export default function History() {
         </p>
       </div>
 
+      {loading && <div>Loading history...</div>}
+      {error && <div>Error: {error}</div>}
+      
       <div className="space-y-4">
         {historyBorrowings.map((borrowing) => {
-          const book = getBook(borrowing.bookId);
-          const group = getGroup(borrowing.groupId);
+          const book = borrowing.book;
+          const group = borrowing.group;
           
           if (!book) return null;
 
@@ -89,28 +88,28 @@ export default function History() {
                       <div>
                         <p className="font-medium font-sans">Borrowed</p>
                         <p className="text-muted-foreground">
-                          {borrowing.borrowedAt.toLocaleDateString()}
+                          {new Date(borrowing.borrowedAt).toLocaleDateString()}
                         </p>
                       </div>
                       
                       <div>
                         <p className="font-medium font-sans">Due Date</p>
                         <p className="text-muted-foreground">
-                          {borrowing.dueDate.toLocaleDateString()}
+                          {new Date(borrowing.dueDate).toLocaleDateString()}
                         </p>
                       </div>
                       
                       <div>
                         <p className="font-medium font-sans">Returned</p>
                         <p className="text-muted-foreground">
-                          {borrowing.returnedAt ? borrowing.returnedAt.toLocaleDateString() : 'Not returned'}
+                          {borrowing.returnedAt ? new Date(borrowing.returnedAt).toLocaleDateString() : 'Not returned'}
                         </p>
                       </div>
                       
                       <div>
                         <p className="font-medium font-sans">Fine</p>
                         <p className={`font-medium ${borrowing.fine ? 'text-red-600' : 'text-green-600'}`}>
-                          {borrowing.fine ? `$${borrowing.fine}` : '$0'}
+                          {borrowing.fine ? `₹${borrowing.fine}` : '₹0'}
                         </p>
                       </div>
                     </div>
