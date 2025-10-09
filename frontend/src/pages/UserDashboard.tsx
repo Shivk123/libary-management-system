@@ -1,73 +1,138 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+import { Search, BookOpen, Clock, Bookmark, User, LogOut } from 'lucide-react';
+
+const menuItems = [
+  { title: 'Browse Books', icon: Search, url: '#' },
+  { title: 'My Borrowings', icon: BookOpen, url: '#' },
+  { title: 'Reservations', icon: Bookmark, url: '#' },
+  { title: 'History', icon: Clock, url: '#' },
+  { title: 'Profile', icon: User, url: '#' },
+];
 
 export default function UserDashboard() {
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-serif font-bold tracking-tight">
-                My Library
+    <SidebarProvider>
+      <div className="flex h-screen w-full">
+        <Sidebar>
+          <SidebarHeader>
+            <h2 className="text-2xl font-serif font-bold px-4 py-2">
+              My Library
+            </h2>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-lg font-sans">Library Services</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {menuItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <a href={item.url} className="text-base font-sans">
+                          <item.icon className="h-5 w-5" />
+                          <span>{item.title}</span>
+                        </a>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+          <SidebarFooter>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link to="/signin" className="text-base font-sans">
+                    <LogOut className="h-5 w-5" />
+                    <span>Sign out</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarFooter>
+        </Sidebar>
+        
+        <main className="flex-1 overflow-auto">
+          <header className="border-b p-4">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger />
+              <h1 className="text-3xl font-serif font-bold tracking-tight">
+                My Library Dashboard
               </h1>
             </div>
-            <div className="flex items-center">
-              <Button variant="ghost" asChild>
-                <Link to="/signin">Sign out</Link>
-              </Button>
-            </div>
+          </header>
+          
+          <div className="p-6">
+            <Card>
+              <CardHeader className="text-center space-y-6">
+                <CardTitle className="text-5xl font-serif font-bold tracking-tight">
+                  Welcome to Your Library
+                </CardTitle>
+                <CardDescription className="text-xl font-sans leading-relaxed max-w-3xl mx-auto">
+                  Browse our extensive collection, manage your borrowings, and discover new titles tailored to your interests.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-serif flex items-center gap-3">
+                      <Search className="h-7 w-7" />
+                      Browse Books
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-lg font-sans text-muted-foreground leading-relaxed">
+                      Search and discover thousands of books in our digital catalog
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-serif flex items-center gap-3">
+                      <BookOpen className="h-7 w-7" />
+                      My Borrowings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-lg font-sans text-muted-foreground leading-relaxed">
+                      View and manage your current and past book borrowings
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-serif flex items-center gap-3">
+                      <Bookmark className="h-7 w-7" />
+                      Reservations
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-lg font-sans text-muted-foreground leading-relaxed">
+                      Reserve books and manage your waiting list preferences
+                    </p>
+                  </CardContent>
+                </Card>
+              </CardContent>
+            </Card>
           </div>
-        </div>
-      </nav>
-      
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <Card>
-            <CardHeader className="text-center space-y-4">
-              <CardTitle className="text-4xl font-serif font-bold tracking-tight">
-                Welcome to Your Library
-              </CardTitle>
-              <CardDescription className="text-lg font-sans leading-relaxed max-w-2xl mx-auto">
-                Browse books, manage your borrowings, and discover new titles in our collection.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl font-serif">Browse Books</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm font-sans text-muted-foreground">
-                    Search and discover books in our catalog
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl font-serif">My Borrowings</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm font-sans text-muted-foreground">
-                    View your current and past borrowings
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl font-serif">Reservations</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm font-sans text-muted-foreground">
-                    Manage your book reservations
-                  </p>
-                </CardContent>
-              </Card>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </SidebarProvider>
   );
 }
