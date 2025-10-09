@@ -1,24 +1,19 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function SignIn() {
-  const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Mock authentication logic - determine role based on email
-    if (email.includes('admin') || email === 'admin@library.com') {
-      navigate('/admin/dashboard');
-    } else {
-      navigate('/user/dashboard');
-    }
+    login(email, password);
   };
 
   return (
