@@ -7,6 +7,7 @@ export interface Book {
   comment: string;
   review: number;
   count: number;
+  price: number;
 }
 
 export const mockBooks: Book[] = [
@@ -18,7 +19,8 @@ export const mockBooks: Book[] = [
     summary: 'A classic American novel set in the Jazz Age, exploring themes of wealth, love, and the American Dream.',
     comment: 'A masterpiece of American literature that captures the essence of the 1920s.',
     review: 4.5,
-    count: 12
+    count: 12,
+    price: 500
   },
   {
     id: '2',
@@ -28,7 +30,8 @@ export const mockBooks: Book[] = [
     summary: 'A gripping tale of racial injustice and childhood innocence in the American South.',
     comment: 'An essential read that addresses important social issues with grace and power.',
     review: 4.8,
-    count: 8
+    count: 8,
+    price: 450
   },
   {
     id: '3',
@@ -38,7 +41,8 @@ export const mockBooks: Book[] = [
     summary: 'A dystopian novel about totalitarianism and surveillance in a future society.',
     comment: 'A chilling and prophetic vision of a world under constant surveillance.',
     review: 4.7,
-    count: 15
+    count: 15,
+    price: 400
   },
   {
     id: '4',
@@ -48,7 +52,8 @@ export const mockBooks: Book[] = [
     summary: 'A romantic novel about manners, upbringing, morality, and marriage in Georgian England.',
     comment: 'Witty and romantic, a timeless story of love overcoming social barriers.',
     review: 4.6,
-    count: 10
+    count: 10,
+    price: 350
   },
   {
     id: '5',
@@ -58,7 +63,8 @@ export const mockBooks: Book[] = [
     summary: 'A coming-of-age story following teenager Holden Caulfield in New York City.',
     comment: 'A controversial yet influential novel about teenage rebellion and alienation.',
     review: 4.2,
-    count: 6
+    count: 6,
+    price: 300
   },
   {
     id: '6',
@@ -68,6 +74,7 @@ export const mockBooks: Book[] = [
     summary: 'A group of British boys stranded on an uninhabited island and their disastrous attempt to govern themselves.',
     comment: 'A powerful allegory about human nature and the thin veneer of civilization.',
     review: 4.3,
-    count: 9
+    count: 9,
+    price: 380
   }
 ];

@@ -1,16 +1,15 @@
 import { useState } from 'react';
-import { Users, BookOpen, BarChart3, Settings } from 'lucide-react';
+import { Users, BookOpen, BarChart3 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardHome from '@/components/layout/DashboardHome';
 import BookCatalog from './BookCatalog';
-import BorrowersTable from '@/components/userTable';
-import LibraryPage from '@/components/adminTableData';
+import UserManagement from './UserManagement';
+import Reports from './Reports';
 
 const menuItems = [
   { title: 'User Management', icon: Users, key: 'users' },
   { title: 'Book Catalog', icon: BookOpen, key: 'books' },
   { title: 'Reports', icon: BarChart3, key: 'reports' },
-  { title: 'Settings', icon: Settings, key: 'settings' },
 ];
 
 export default function AdminDashboard() {
@@ -19,38 +18,32 @@ export default function AdminDashboard() {
   const dashboardCards = [
     {
       title: 'User Management',
-      description: 'Add, edit, and manage library users and their permissions',
+      description: 'Manage library users, view borrowing status, and handle fines',
       icon: Users,
       onClick: () => setActiveView('users')
     },
     {
       title: 'Book Catalog',
-      description: 'Manage book inventory, catalog, and availability status',
+      description: 'Add, edit, and manage book inventory with detailed information',
       icon: BookOpen,
       onClick: () => setActiveView('books')
     },
     {
       title: 'Analytics & Reports',
-      description: 'Generate detailed system and usage analytics reports',
+      description: 'View library statistics, popular books, and financial reports',
       icon: BarChart3,
       onClick: () => setActiveView('reports')
-    },
-    {
-      title: 'Settings',
-      description: 'A',
-      icon: BarChart3,
-      onClick: () => setActiveView('settings')
     }
   ];
 
   const renderContent = () => {
     switch (activeView) {
+      case 'users':
+        return <UserManagement />;
       case 'books':
         return <BookCatalog />;
-      case 'users':
-        return <BorrowersTable />;
       case 'reports':
-        return < LibraryPage />;
+        return <Reports />;
       case 'dashboard':
         return (
           <DashboardHome

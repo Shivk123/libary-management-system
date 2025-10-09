@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  borrowings    Borrowing[]
+  createdGroups Group[]     @relation("GroupCreator")
+  groupMembers  GroupMember[]
+}
+
+model Book {
+  id      String @id @default(cuid())
+  title   String
+  author  String
+  summary String
+  comment String
+  review  Float
+  count   Int
+  image   String
+
+  borrowings Borrowing[]
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  createdBy   String
+  createdAt   DateTime @default(now())
+
+  creator   User           @relation("GroupCreator", fields: [createdBy], references: [id])
+  members   GroupMember[]
+  borrowings Borrowing[]
+}
+
+model GroupMember {
+  id      String @id @default(cuid())
+  userId  String
+  groupId String
+
+  user  User  @relation(fields: [userId], references: [id])
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@unique([userId, groupId])
+}
+
+model Borrowing {
+  id         String   @id @default(cuid())
+  bookId     String
+  borrowerId String
+  type       String   // 'individual' | 'group'
+  groupId    String?
+  borrowedAt DateTime @default(now())
+  dueDate    DateTime
+  returnedAt DateTime?
+  status     String   @default("active") // 'active' | 'returned' | 'overdue' | 'missing'
+  fine       Float?
+
+  book     Book   @relation(fields: [bookId], references: [id])
+  borrower User   @relation(fields: [borrowerId], references: [id])
+  group    Group? @relation(fields: [groupId], references: [id])
+}

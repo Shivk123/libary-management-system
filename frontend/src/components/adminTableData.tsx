@@ -40,7 +40,7 @@ interface BorrowRecord {
     damage: DamageStatus;
 }
 
-export default function LibraryPage(): JSX.Element {
+export default function LibraryPage(): React.JSX.Element {
     const [books, setBooks] = useState<Book[]>(() => sampleBooks());
     const [borrowed, setBorrowed] = useState<BorrowRecord[]>(() => sampleBorrowed());
     const [query, setQuery] = useState<string>("");

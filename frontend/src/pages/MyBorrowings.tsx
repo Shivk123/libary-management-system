@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, Users, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Clock, Users, AlertTriangle, CheckCircle, IndianRupee } from 'lucide-react';
 import { mockBorrowings } from '@/data/borrowings';
 import { mockBooks } from '@/data/books';
 import { mockGroups } from '@/data/groups';
+import { calculateFine } from '@/utils/fineCalculator';
 
 export default function MyBorrowings() {
   const activeBorrowings = mockBorrowings.filter(b => b.status === 'active' || b.status === 'overdue');
@@ -30,6 +31,11 @@ export default function MyBorrowings() {
     return diffDays;
   };
 
+  const getFineDetails = (borrowing: any, book: any) => {
+    if (!book) return { totalFine: 0, daysLate: 0 };
+    return calculateFine(borrowing.dueDate, null, book.price, 0);
+  };
+
   return (
     <div className="p-6">
       <div className="mb-8">
@@ -46,6 +52,7 @@ export default function MyBorrowings() {
           const book = getBook(borrowing.bookId);
           const group = getGroup(borrowing.groupId);
           const daysRemaining = getDaysRemaining(borrowing.dueDate);
+          const fineDetails = getFineDetails(borrowing, book);
           
           if (!book) return null;
 
@@ -103,18 +110,25 @@ export default function MyBorrowings() {
                   </div>
                   <div>
                     <p className="font-medium font-sans">Fine</p>
-                    <p className="text-muted-foreground">
-                      {borrowing.fine ? `$${borrowing.fine}` : '$0'}
-                    </p>
+                    <div className="flex items-center gap-1">
+                      <IndianRupee className="h-3 w-3" />
+                      <p className={`font-medium ${fineDetails.totalFine > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                        {fineDetails.totalFine}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 
-                {borrowing.status === 'overdue' && (
-                  <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg">
-                    <AlertTriangle className="h-4 w-4 text-red-600" />
-                    <p className="text-sm text-red-800">
-                      This book is overdue. Please return it as soon as possible to avoid additional fines.
-                    </p>
+                {daysRemaining < 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg">
+                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                      <div className="text-sm text-red-800">
+                        <p className="font-medium">Book is overdue!</p>
+                        <p>Late Fee: ₹{fineDetails.lateFee} | Missing Fee: ₹{fineDetails.missingFee}</p>
+                        <p>Total Fine: ₹{fineDetails.totalFine}</p>
+                      </div>
+                    </div>
                   </div>
                 )}
                 
