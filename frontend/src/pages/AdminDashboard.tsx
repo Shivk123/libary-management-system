@@ -3,6 +3,8 @@ import { Users, BookOpen, BarChart3, Settings } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardHome from '@/components/layout/DashboardHome';
 import BookCatalog from './BookCatalog';
+import BorrowersTable from '@/components/userTable';
+import LibraryPage from '@/components/adminTableData';
 
 const menuItems = [
   { title: 'User Management', icon: Users, key: 'users' },
@@ -32,6 +34,12 @@ export default function AdminDashboard() {
       description: 'Generate detailed system and usage analytics reports',
       icon: BarChart3,
       onClick: () => setActiveView('reports')
+    },
+    {
+      title: 'Settings',
+      description: 'A',
+      icon: BarChart3,
+      onClick: () => setActiveView('settings')
     }
   ];
 
@@ -39,6 +47,10 @@ export default function AdminDashboard() {
     switch (activeView) {
       case 'books':
         return <BookCatalog />;
+      case 'users':
+        return <BorrowersTable />;
+      case 'reports':
+        return < LibraryPage />;
       case 'dashboard':
         return (
           <DashboardHome
@@ -47,6 +59,7 @@ export default function AdminDashboard() {
             cards={dashboardCards}
           />
         );
+
       default:
         return (
           <div className="p-6">
