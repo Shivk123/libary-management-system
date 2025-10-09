@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tilt } from '@/components/ui/tilt';
 import { Star, Edit } from 'lucide-react';
 import { useBooks } from '@/hooks/useBooks';
 import type { Book } from '@/data/books';
@@ -69,50 +70,55 @@ export default function BookCatalog() {
       {loading && <div>Loading books...</div>}
       {error && <div>Error: {error}</div>}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {books.map((book) => (
-          <Card key={book.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="p-0">
-              <img
-                src={book.image}
-                alt={book.title}
-                className="w-full h-64 object-cover rounded-t-lg"
-              />
-            </CardHeader>
-            <CardContent className="p-4">
-              <CardTitle className="text-lg font-serif mb-2 line-clamp-2">
-                {book.title}
-              </CardTitle>
-              <p className="text-base font-sans text-muted-foreground mb-2">
-                by {book.author}
-              </p>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="flex">{renderStars(book.review)}</div>
-                <span className="text-sm font-sans">{book.review}</span>
+          <div key={book.id}>
+            <Tilt tiltMaxAngleX={8} tiltMaxAngleY={8}>
+              <div
+                style={{ borderRadius: '12px' }}
+                className='flex max-w-[270px] flex-col overflow-hidden border border-border bg-card hover:shadow-lg transition-shadow'
+              >
+                <div className="relative">
+                  <img
+                    src={book.image}
+                    alt={book.title}
+                    className='h-48 w-full object-cover'
+                  />
+                </div>
+                <div className='p-4'>
+                  <h1 className='font-serif leading-snug text-card-foreground text-sm line-clamp-2 mb-2'>
+                    {book.title}
+                  </h1>
+                  <p className='text-muted-foreground text-xs mb-2'>by {book.author}</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex">{renderStars(book.review)}</div>
+                    <span className="text-xs">{book.review}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    {book.count} available
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedBook(book)}
+                      className="flex-1 text-xs"
+                    >
+                      View
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleEditBook(book)}
+                      className="flex-1 text-xs"
+                    >
+                      <Edit className="h-3 w-3 mr-1" />
+                      Edit
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <p className="text-sm font-sans text-muted-foreground mb-3">
-                {book.count} available
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedBook(book)}
-                  className="flex-1"
-                >
-                  View
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => handleEditBook(book)}
-                  className="flex-1"
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            </Tilt>
+          </div>
         ))}
       </div>
 

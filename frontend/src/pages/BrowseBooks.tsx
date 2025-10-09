@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tilt } from '@/components/ui/tilt';
 import { Star, Clock, Users, Search } from 'lucide-react';
 import { useBooks } from '@/hooks/useBooks';
 import { useGroups } from '@/hooks/useGroups';
@@ -100,82 +101,83 @@ export default function BrowseBooks() {
       {loading && <div>Loading books...</div>}
       {error && <div>Error: {error}</div>}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredBooks.map((book) => (
-          <Card
-            key={book.id}
-            className="cursor-pointer hover:shadow-lg transition-shadow"
-            onClick={() => setSelectedBook(book)}
-          >
-            <CardHeader className="p-0">
-              <img
-                src={book.image}
-                alt={book.title}
-                className="w-full h-64 object-cover rounded-t-lg"
-              />
-            </CardHeader>
-            <CardContent className="p-4">
-              <CardTitle className="text-lg font-serif mb-2 line-clamp-2">
-                {book.title}
-              </CardTitle>
-              <p className="text-base font-sans text-muted-foreground mb-2">
-                by {book.author}
-              </p>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="flex">{renderStars(book.review)}</div>
-                <span className="text-sm font-sans">{book.review}</span>
+          <div key={book.id} onClick={() => setSelectedBook(book)}>
+            <Tilt tiltMaxAngleX={8} tiltMaxAngleY={8}>
+              <div
+                style={{ borderRadius: '12px' }}
+                className='flex max-w-[270px] flex-col overflow-hidden border border-zinc-950/10 bg-white dark:border-zinc-50/10 dark:bg-zinc-900 cursor-pointer hover:shadow-lg transition-shadow'
+              >
+                <div className="relative">
+                  <img
+                    src={book.image}
+                    alt={book.title}
+                    className='h-48 w-full object-cover'
+                  />
+                  {isBookAlreadyBorrowed(book.id) && (
+                    <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
+                      Borrowed
+                    </Badge>
+                  )}
+                </div>
+                <div className='p-2'>
+                  <h1 className='font-mono leading-snug text-zinc-950 dark:text-zinc-50 text-sm line-clamp-2'>
+                    {book.title}
+                  </h1>
+                  <p className='text-zinc-700 dark:text-zinc-400 text-xs mb-2'>by {book.author}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      <div className="flex">{renderStars(book.review)}</div>
+                      <span className="text-xs ml-1">{book.review}</span>
+                    </div>
+                    <span className="text-xs text-zinc-700 dark:text-zinc-400">
+                      {book.count} available
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-sans text-muted-foreground">
-                  {book.count} available
-                </p>
-                {isBookAlreadyBorrowed(book.id) && (
-                  <Badge variant="secondary" className="text-xs">
-                    Borrowed
-                  </Badge>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+            </Tilt>
+          </div>
         ))}
       </div>
 
       <Dialog open={!!selectedBook} onOpenChange={() => setSelectedBook(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           {selectedBook && (
             <>
               <DialogHeader>
-                <DialogTitle className="text-2xl font-serif">
+                <DialogTitle className="text-xl font-serif pr-8">
                   {selectedBook.title}
                 </DialogTitle>
               </DialogHeader>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="flex justify-center">
                   <img
                     src={selectedBook.image}
                     alt={selectedBook.title}
-                    className="w-full h-80 object-cover rounded-lg"
+                    className="w-64 h-80 object-cover rounded-lg"
                   />
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div>
-                    <h3 className="text-lg font-serif font-semibold mb-2">Author</h3>
-                    <p className="text-base font-sans">{selectedBook.author}</p>
+                    <h3 className="text-sm font-semibold mb-1">Author</h3>
+                    <p className="text-sm">{selectedBook.author}</p>
                   </div>
                   <div>
-                    <h3 className="text-lg font-serif font-semibold mb-2">Rating</h3>
+                    <h3 className="text-sm font-semibold mb-1">Rating</h3>
                     <div className="flex items-center gap-2">
                       <div className="flex">{renderStars(selectedBook.review)}</div>
-                      <span className="text-base font-sans">{selectedBook.review}/5</span>
+                      <span className="text-sm">{selectedBook.review}/5</span>
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-lg font-serif font-semibold mb-2">Available Copies</h3>
-                    <p className="text-base font-sans">{selectedBook.count} copies</p>
+                    <h3 className="text-sm font-semibold mb-1">Available</h3>
+                    <p className="text-sm">{selectedBook.count} copies</p>
                   </div>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div>
-                      <label className="text-sm font-medium font-sans mb-2 block">
+                      <label className="text-sm font-medium mb-1 block">
                         Borrowing Method
                       </label>
                       <Select value={borrowingType} onValueChange={(value: 'individual' | 'group') => setBorrowingType(value)}>
@@ -201,7 +203,7 @@ export default function BrowseBooks() {
                     
                     {borrowingType === 'group' && (
                       <div>
-                        <label className="text-sm font-medium font-sans mb-2 block">
+                        <label className="text-sm font-medium mb-1 block">
                           Select Group
                         </label>
                         <Select value={selectedGroup} onValueChange={setSelectedGroup}>
@@ -220,13 +222,11 @@ export default function BrowseBooks() {
                     )}
                     
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Badge variant={borrowingType === 'individual' ? 'default' : 'secondary'}>
-                          {borrowingType === 'individual' ? '30 days limit' : '6 months limit'}
-                        </Badge>
-                      </div>
+                      <Badge variant={borrowingType === 'individual' ? 'default' : 'secondary'} className="text-xs">
+                        {borrowingType === 'individual' ? '30 days limit' : '6 months limit'}
+                      </Badge>
                       <p className="text-xs text-muted-foreground">
-                        Late returns incur fines. Missing books are charged even if returned later.
+                        Late returns incur fines. Missing books are charged.
                       </p>
                     </div>
                     
@@ -243,14 +243,14 @@ export default function BrowseBooks() {
                   </div>
                 </div>
               </div>
-              <div className="space-y-4 mt-6">
+              <div className="space-y-3 mt-4">
                 <div>
-                  <h3 className="text-lg font-serif font-semibold mb-2">Summary</h3>
-                  <p className="text-base font-sans leading-relaxed">{selectedBook.summary}</p>
+                  <h3 className="text-sm font-semibold mb-1">Summary</h3>
+                  <p className="text-sm leading-relaxed">{selectedBook.summary}</p>
                 </div>
                 <div>
-                  <h3 className="text-lg font-serif font-semibold mb-2">Review</h3>
-                  <p className="text-base font-sans leading-relaxed">{selectedBook.comment}</p>
+                  <h3 className="text-sm font-semibold mb-1">Review</h3>
+                  <p className="text-sm leading-relaxed">{selectedBook.comment}</p>
                 </div>
               </div>
             </>
