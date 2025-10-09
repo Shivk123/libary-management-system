@@ -1,10 +1,31 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
 
 export default function SignUp() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // New users default to regular user role
+    navigate('/user/dashboard');
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value
+    });
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-full max-w-md">
@@ -17,7 +38,7 @@ export default function SignUp() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium font-sans">
                 Full name
@@ -27,6 +48,8 @@ export default function SignUp() {
                 type="text"
                 placeholder="John Doe"
                 className="font-sans"
+                value={formData.name}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -39,6 +62,8 @@ export default function SignUp() {
                 type="email"
                 placeholder="name@example.com"
                 className="font-sans"
+                value={formData.email}
+                onChange={handleChange}
                 required
               />
             </div>
@@ -51,6 +76,8 @@ export default function SignUp() {
                 type="password"
                 placeholder="Create a secure password"
                 className="font-sans"
+                value={formData.password}
+                onChange={handleChange}
                 required
               />
             </div>

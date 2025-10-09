@@ -1,10 +1,26 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
 
 export default function SignIn() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Mock authentication logic - determine role based on email
+    if (email.includes('admin') || email === 'admin@library.com') {
+      navigate('/admin/dashboard');
+    } else {
+      navigate('/user/dashboard');
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-full max-w-md">
@@ -17,7 +33,7 @@ export default function SignIn() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium font-sans">
                 Email address
@@ -27,6 +43,8 @@ export default function SignIn() {
                 type="email"
                 placeholder="name@example.com"
                 className="font-sans"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -39,6 +57,8 @@ export default function SignIn() {
                 type="password"
                 placeholder="Enter your password"
                 className="font-sans"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
