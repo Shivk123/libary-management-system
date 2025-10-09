@@ -7,10 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Edit, Save, X, BookOpen, Users, Clock } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { mockBorrowings } from '@/data/borrowings';
-import { mockGroups } from '@/data/groups';
+import { Edit, Save, X, BookOpen, Users, Clock, IndianRupee } from 'lucide-react';
+import { useBorrowings } from '@/hooks/useBorrowings';
+import { useGroups } from '@/hooks/useGroups';
+import { userService } from '@/services/userService';
 
 interface ProfileFormData {
   name: string;
@@ -20,25 +20,36 @@ interface ProfileFormData {
 }
 
 export default function Profile() {
-  const { user } = useAuth();
+  const currentUser = userService.getCurrentUser();
+  const { borrowings } = useBorrowings();
+  const { groups } = useGroups();
   const [isEditing, setIsEditing] = useState(false);
   const { register, handleSubmit, reset } = useForm<ProfileFormData>({
     defaultValues: {
-      name: user?.name || '',
-      email: user?.email || '',
-      phone: '+1 (555) 123-4567',
-      address: '123 Library St, Book City, BC 12345'
+      name: currentUser.name,
+      email: currentUser.email,
+      phone: '+91 98765 43210',
+      address: '123 Library St, Mumbai, MH 400001'
     }
   });
 
-  const activeBorrowings = mockBorrowings.filter(b => b.status === 'active').length;
-  const totalBorrowings = mockBorrowings.length;
-  const userGroups = mockGroups.filter(g => g.members.includes('1')).length;
-  const totalFines = mockBorrowings.reduce((sum, b) => sum + (b.fine || 0), 0);
+  const activeBorrowings = borrowings.filter(b => b.status === 'active' || b.status === 'overdue').length;
+  const totalBorrowings = borrowings.length;
+  const userGroups = groups.length;
+  const totalFines = borrowings.reduce((sum, b) => sum + (b.fine || 0), 0);
 
-  const onSubmit = (data: ProfileFormData) => {
-    console.log('Profile updated:', data);
-    setIsEditing(false);
+  const onSubmit = async (data: ProfileFormData) => {
+    try {
+      await userService.updateUser(currentUser.id, {
+        name: data.name,
+        email: data.email
+      });
+      setIsEditing(false);
+      alert('Profile updated successfully!');
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+      alert('Failed to update profile. Please try again.');
+    }
   };
 
   const handleCancel = () => {
@@ -86,13 +97,13 @@ export default function Profile() {
               <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20">
                   <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                    {user?.name.charAt(0).toUpperCase()}
+                    {currentUser.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-xl font-serif font-semibold">{user?.name}</h3>
+                  <h3 className="text-xl font-serif font-semibold">{currentUser.name}</h3>
                   <Badge variant="secondary" className="mt-1">
-                    {user?.role === 'admin' ? 'Administrator' : 'Library Member'}
+                    Library Member
                   </Badge>
                 </div>
               </div>
@@ -181,9 +192,12 @@ export default function Profile() {
               <Separator />
               
               <div className="flex items-center justify-between">
-                <span className="text-sm font-sans font-medium">Outstanding Fines</span>
+                <div className="flex items-center gap-2">
+                  <IndianRupee className="h-4 w-4 text-red-600" />
+                  <span className="text-sm font-sans font-medium">Outstanding Fines</span>
+                </div>
                 <span className={`text-lg font-semibold ${totalFines > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                  ${totalFines}
+                  ₹{totalFines}
                 </span>
               </div>
             </CardContent>

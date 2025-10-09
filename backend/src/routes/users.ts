@@ -50,4 +50,17 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Update user
+router.put('/:id', async (req, res) => {
+  try {
+    const user = await prisma.user.update({
+      where: { id: req.params.id },
+      data: req.body
+    });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update user' });
+  }
+});
+
 export default router;

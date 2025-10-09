@@ -12,6 +12,11 @@ export const userService = {
     return response.data;
   },
 
+  async updateUser(id: string, userData: Partial<User>): Promise<User> {
+    const response = await api.put(`/users/${id}`, userData);
+    return response.data;
+  },
+
   // For demo purposes - in a real app this would come from authentication
   getCurrentUser(): User {
     return {
