@@ -127,8 +127,8 @@ The **Admin Panel** offers complete system control with three key sections:
 ```bash
 cd backend
 npm install
-npx prisma generate
-npx prisma db push
+npm run db:generate
+npm run db:push
 npm run db:seed
 npm run dev
 ```
