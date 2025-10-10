@@ -10,23 +10,23 @@ It enables efficient book catalog management, user borrowing, fine calculation, 
 ### 👨‍💼 Admin Features
 
 #### 🧑‍🔧 Editing User Details
-[![Admin-Editing User Admin Details](https://img.youtube.com/vi/3c5WKe9TP_E/0.jpg)](https://youtu.be/3c5WKe9TP_E)  
-*The admin updates user information such as name, email, and role through the dashboard.*
+https://github.com/user-attachments/assets/4ab1703b-0828-4a2d-8af0-c84bd9d3aec2
+*The admin updates user information such as name, email, and contact through the dashboard.*
 
 #### 📘 Adding a New Book
-[![Admin-Adding a new Book](https://img.youtube.com/vi/qRo-aS78Rt8/0.jpg)](https://youtu.be/qRo-aS78Rt8)  
+https://github.com/user-attachments/assets/96791634-13ec-4323-8a2b-f0c6070bc94f
 *The admin adds new books to the library by entering title, author, ISBN, and category details.*
 
 #### ✏️ Editing Book Details
-[![Admin-Editing Book Details](https://img.youtube.com/vi/sagaKQOkNvc/0.jpg)](https://youtu.be/sagaKQOkNvc)  
+https://github.com/user-attachments/assets/f6dc99b9-2e7d-4020-b2a7-3d1f67b70ad6
 *The admin modifies existing book records, such as updating titles, authors, or availability.*
 
 #### 🗑️ Deleting a Book
-[![Admin-Deleting Book](https://img.youtube.com/vi/tXm5zDe-610/0.jpg)](https://youtu.be/tXm5zDe-610)  
+https://github.com/user-attachments/assets/e6542378-33c6-485e-9f1a-da4e2b0801df
 *The admin removes outdated or unavailable books from the system.*
 
 #### ✅ Approving Book Returns
-[![Admin-Approving Returns](https://img.youtube.com/vi/WTSjs5ohDHk/0.jpg)](https://youtu.be/WTSjs5ohDHk)  
+https://github.com/user-attachments/assets/a735e175-1dd9-484d-b539-47a6d612ca02
 *The admin reviews and approves book return requests submitted by users.*
 
 ---
@@ -34,15 +34,15 @@ It enables efficient book catalog management, user borrowing, fine calculation, 
 ### 👤 User Features
 
 #### 👥 Creating a Group
-[![User Creating Group](https://img.youtube.com/vi/yOI9VnxV5mk/0.jpg)](https://youtu.be/yOI9VnxV5mk)  
+https://github.com/user-attachments/assets/2ef7f487-4748-423c-a6e3-2d9041e7e5b3
 *Users can form groups to manage shared book borrowing activities.*
 
 #### 📚 Borrowing Books Individually
-[![User Borrowing Books](https://img.youtube.com/vi/jAsuGk-movU/0.jpg)](https://youtu.be/jAsuGk-movU)  
+https://github.com/user-attachments/assets/8c37211a-c1b6-4963-a22b-9fcbb78e8d4f
 *A user borrows available books directly from the library catalog.*
 
 #### 🤝 Borrowing Books in a Group
-[![User Borrowing Books in a Group](https://img.youtube.com/vi/tiSrAEdgwrc/0.jpg)](https://youtu.be/tiSrAEdgwrc)  
+https://github.com/user-attachments/assets/5618cf33-1244-4105-aace-179b5577aa80
 *A user borrows books on behalf of their group for collaborative study or sharing.*
 
 ---
