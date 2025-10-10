@@ -168,7 +168,7 @@ export default function BrowseBooks() {
                       <label className="text-sm font-medium mb-1 block">
                         Borrowing Method
                       </label>
-                      <Select value={borrowingType} onValueChange={(value: 'individual' | 'group') => setBorrowingType(value)}>
+                      <Select value={borrowingType} onValueChange={(value) => setBorrowingType(value as 'individual' | 'group')}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -200,7 +200,7 @@ export default function BrowseBooks() {
                           </SelectTrigger>
                           <SelectContent>
                             {groups.map(group => (
-                              <SelectItem key={group.id} value={group.id}>
+                              <SelectItem key={group.id} value={group.name}>
                                 {group.name}
                               </SelectItem>
                             ))}
