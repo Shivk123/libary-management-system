@@ -43,4 +43,9 @@ export const booksService = {
     booksCache = null;
     return response.data;
   },
+
+  async deleteBook(id: string): Promise<void> {
+    await api.delete(`/books/${id}`);
+    booksCache = null;
+  },
 };

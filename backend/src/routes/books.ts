@@ -53,4 +53,29 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Delete book
+router.delete('/:id', async (req, res) => {
+  try {
+    // Check if book has active borrowings
+    const activeBorrowings = await prisma.borrowing.count({
+      where: { 
+        bookId: req.params.id,
+        status: { in: ['active', 'overdue', 'return_requested', 'return_approved'] }
+      }
+    });
+    
+    if (activeBorrowings > 0) {
+      return res.status(400).json({ error: 'Cannot delete book with active borrowings' });
+    }
+    
+    await prisma.book.delete({
+      where: { id: req.params.id }
+    });
+    res.json({ message: 'Book deleted successfully' });
+  } catch (error) {
+    console.error('Delete book error:', error);
+    res.status(500).json({ error: 'Failed to delete book' });
+  }
+});
+
 export default router;

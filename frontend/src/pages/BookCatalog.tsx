@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tilt } from '@/components/ui/tilt';
-import { Star, Edit, Plus } from 'lucide-react';
+import { Star, Edit, Plus, Trash2 } from 'lucide-react';
 import { useBooks } from '@/hooks/useBooks';
 import { booksService } from '@/services/booksService';
 import type { Book } from '@/data/books';
@@ -66,6 +66,23 @@ export default function BookCatalog() {
   const handleAddBook = () => {
     setIsAdding(true);
     reset();
+  };
+
+  const handleDeleteBook = async (book: Book) => {
+    if (confirm(`Are you sure you want to delete "${book.title}"?`)) {
+      try {
+        await booksService.deleteBook(book.id);
+        await refreshBooks();
+        if (selectedBook?.id === book.id) {
+          setSelectedBook(null);
+        }
+        alert('Book deleted successfully!');
+      } catch (err: any) {
+        console.error('Failed to delete book:', err);
+        const errorMessage = err.response?.data?.error || 'Failed to delete book. Please try again.';
+        alert(errorMessage);
+      }
+    }
   };
 
   return (
@@ -271,10 +288,20 @@ export default function BookCatalog() {
                         <h3 className="text-lg font-serif font-semibold mb-2">Available Copies</h3>
                         <p className="text-base font-sans">{selectedBook.count} copies</p>
                       </div>
-                      <Button onClick={() => handleEditBook(selectedBook)} className="w-full">
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit Book Details
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button onClick={() => handleEditBook(selectedBook)} className="flex-1">
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Details
+                        </Button>
+                        <Button 
+                          variant="destructive" 
+                          onClick={() => handleDeleteBook(selectedBook)}
+                          className="flex-1"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </Button>
+                      </div>
                     </div>
                   </div>
                   <div className="space-y-4 mt-6">
