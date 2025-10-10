@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { UserProvider } from './contexts/UserContext';
 import { LibraryProvider } from './contexts/LibraryContext';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
@@ -10,15 +11,17 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <LibraryProvider>
-          <Routes>
-            <Route path="/" element={<Navigate to="/signin" replace />} />
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/user/dashboard" element={<UserDashboard />} />
-          </Routes>
-        </LibraryProvider>
+        <UserProvider>
+          <LibraryProvider>
+            <Routes>
+              <Route path="/" element={<Navigate to="/signin" replace />} />
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/signup" element={<SignUp />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/user/dashboard" element={<UserDashboard />} />
+            </Routes>
+          </LibraryProvider>
+        </UserProvider>
       </AuthProvider>
     </Router>
   );

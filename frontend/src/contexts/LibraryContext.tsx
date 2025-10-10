@@ -1,17 +1,15 @@
 import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import type { User, Book, Group, Borrowing } from '@/lib/schemas';
-import { userService } from '@/services/userService';
+import { useUser } from './UserContext';
 import { booksService } from '@/services/booksService';
 import { groupsService } from '@/services/groupsService';
 import { borrowingService } from '@/services/borrowingService';
 
 interface LibraryState {
-  user: User | null;
   books: Book[];
   groups: Group[];
   borrowings: Borrowing[];
   loading: {
-    user: boolean;
     books: boolean;
     groups: boolean;
     borrowings: boolean;
@@ -20,7 +18,6 @@ interface LibraryState {
 }
 
 type LibraryAction =
-  | { type: 'SET_USER'; payload: User }
   | { type: 'SET_BOOKS'; payload: Book[] }
   | { type: 'SET_GROUPS'; payload: Group[] }
   | { type: 'SET_BORROWINGS'; payload: Borrowing[] }
@@ -29,12 +26,10 @@ type LibraryAction =
   | { type: 'ADD_BORROWING'; payload: Borrowing };
 
 const initialState: LibraryState = {
-  user: null,
   books: [],
   groups: [],
   borrowings: [],
   loading: {
-    user: true,
     books: true,
     groups: true,
     borrowings: true,
@@ -44,8 +39,6 @@ const initialState: LibraryState = {
 
 function libraryReducer(state: LibraryState, action: LibraryAction): LibraryState {
   switch (action.type) {
-    case 'SET_USER':
-      return { ...state, user: action.payload };
     case 'SET_BOOKS':
       return { ...state, books: action.payload };
     case 'SET_GROUPS':
@@ -75,14 +68,12 @@ const LibraryContext = createContext<LibraryContextType | undefined>(undefined);
 
 export function LibraryProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(libraryReducer, initialState);
+  const { user } = useUser();
 
   const loadData = async () => {
+    if (!user) return;
+    
     try {
-      dispatch({ type: 'SET_LOADING', payload: { key: 'user', value: true } });
-      const user = await userService.getCurrentUser();
-      dispatch({ type: 'SET_USER', payload: user });
-      dispatch({ type: 'SET_LOADING', payload: { key: 'user', value: false } });
-
       dispatch({ type: 'SET_LOADING', payload: { key: 'books', value: true } });
       const books = await booksService.getBooks();
       dispatch({ type: 'SET_BOOKS', payload: books });
@@ -103,11 +94,11 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   };
 
   const borrowBook = async (bookId: string, type: 'individual' | 'group', groupId?: string) => {
-    if (!state.user) throw new Error('User not found');
+    if (!user) throw new Error('User not found');
     
     const borrowing = await borrowingService.borrowBook({
       bookId,
-      borrowerId: state.user.id,
+      borrowerId: user.id,
       type,
       groupId,
     });
@@ -120,8 +111,10 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (user) {
+      loadData();
+    }
+  }, [user]);
 
   const contextValue: LibraryContextType = {
     ...state,
