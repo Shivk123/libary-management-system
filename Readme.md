@@ -5,6 +5,48 @@ It enables efficient book catalog management, user borrowing, fine calculation, 
 
 ---
 
+## 📚 Library Management System — Walkthrough
+
+### 👨‍💼 Admin Features
+
+#### 🧑‍🔧 Editing User Details
+[![Admin-Editing User Admin Details](https://img.youtube.com/vi/3c5WKe9TP_E/0.jpg)](https://youtu.be/3c5WKe9TP_E)  
+*The admin updates user information such as name, email, and role through the dashboard.*
+
+#### 📘 Adding a New Book
+[![Admin-Adding a new Book](https://img.youtube.com/vi/qRo-aS78Rt8/0.jpg)](https://youtu.be/qRo-aS78Rt8)  
+*The admin adds new books to the library by entering title, author, ISBN, and category details.*
+
+#### ✏️ Editing Book Details
+[![Admin-Editing Book Details](https://img.youtube.com/vi/sagaKQOkNvc/0.jpg)](https://youtu.be/sagaKQOkNvc)  
+*The admin modifies existing book records, such as updating titles, authors, or availability.*
+
+#### 🗑️ Deleting a Book
+[![Admin-Deleting Book](https://img.youtube.com/vi/tXm5zDe-610/0.jpg)](https://youtu.be/tXm5zDe-610)  
+*The admin removes outdated or unavailable books from the system.*
+
+#### ✅ Approving Book Returns
+[![Admin-Approving Returns](https://img.youtube.com/vi/WTSjs5ohDHk/0.jpg)](https://youtu.be/WTSjs5ohDHk)  
+*The admin reviews and approves book return requests submitted by users.*
+
+---
+
+### 👤 User Features
+
+#### 👥 Creating a Group
+[![User Creating Group](https://img.youtube.com/vi/yOI9VnxV5mk/0.jpg)](https://youtu.be/yOI9VnxV5mk)  
+*Users can form groups to manage shared book borrowing activities.*
+
+#### 📚 Borrowing Books Individually
+[![User Borrowing Books](https://img.youtube.com/vi/jAsuGk-movU/0.jpg)](https://youtu.be/jAsuGk-movU)  
+*A user borrows available books directly from the library catalog.*
+
+#### 🤝 Borrowing Books in a Group
+[![User Borrowing Books in a Group](https://img.youtube.com/vi/tiSrAEdgwrc/0.jpg)](https://youtu.be/tiSrAEdgwrc)  
+*A user borrows books on behalf of their group for collaborative study or sharing.*
+
+---
+
 ## Features
 
 ### Authentication & Authorization
