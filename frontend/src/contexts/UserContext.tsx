@@ -1,5 +1,5 @@
-import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { User } from '@/lib/schemas';
+import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
+import type { User } from '@/lib/schemas';
 import { userService } from '@/services/userService';
 
 interface UserState {
