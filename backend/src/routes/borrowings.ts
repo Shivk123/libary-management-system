@@ -138,4 +138,156 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
+// Request return
+router.post('/:id/request-return', async (req, res) => {
+  try {
+    const borrowing = await prisma.borrowing.update({
+      where: { id: req.params.id },
+      data: {
+        status: 'return_requested',
+        returnRequestedAt: new Date()
+      },
+      include: {
+        book: true,
+        borrower: true
+      }
+    });
+    res.json(borrowing);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to request return' });
+  }
+});
+
+// Get return requests
+router.get('/return-requests', async (req, res) => {
+  try {
+    const requests = await prisma.borrowing.findMany({
+      where: { status: 'return_requested' },
+      include: {
+        book: true,
+        borrower: true
+      },
+      orderBy: { returnRequestedAt: 'asc' }
+    });
+    res.json(requests);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch return requests' });
+  }
+});
+
+// Approve return
+router.post('/:id/approve-return', async (req, res) => {
+  try {
+    const { damageType, fine } = req.body;
+    
+    // Get borrowing with book details to calculate breakdown
+    const existingBorrowing = await prisma.borrowing.findUnique({
+      where: { id: req.params.id },
+      include: { book: true }
+    });
+    
+    if (!existingBorrowing) {
+      return res.status(404).json({ error: 'Borrowing not found' });
+    }
+    
+    // Calculate fine breakdown
+    const borrowedDate = new Date(existingBorrowing.borrowedAt);
+    const dueDate = new Date(borrowedDate.getTime() + (30 * 24 * 60 * 60 * 1000));
+    const now = new Date();
+    const daysLate = Math.max(0, Math.ceil((now.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
+    
+    const breakdown = [];
+    
+    if (damageType === 'lost') {
+      breakdown.push({ label: 'Lost/Missing book (200%)', amount: existingBorrowing.book.price * 2 });
+      if (daysLate > 0) {
+        breakdown.push({ label: `Late fee (${daysLate} days × ₹50)`, amount: daysLate * 50 });
+      }
+    } else {
+      if (daysLate > 0) {
+        breakdown.push({ label: 'Missing book fee (200%)', amount: existingBorrowing.book.price * 2 });
+        breakdown.push({ label: `Late fee (${daysLate} days × ₹50)`, amount: daysLate * 50 });
+      }
+      if (damageType === 'small') {
+        breakdown.push({ label: 'Small damage (10%)', amount: existingBorrowing.book.price * 0.1 });
+      } else if (damageType === 'large') {
+        breakdown.push({ label: 'Large damage (50%)', amount: existingBorrowing.book.price * 0.5 });
+      }
+    }
+    
+    const borrowing = await prisma.borrowing.update({
+      where: { id: req.params.id },
+      data: {
+        status: 'return_approved',
+        returnApprovedAt: new Date(),
+        damageType,
+        damageFee: fine,
+        fine,
+        fineBreakdown: JSON.stringify(breakdown)
+      },
+      include: {
+        book: true,
+        borrower: true
+      }
+    });
+    res.json(borrowing);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to approve return' });
+  }
+});
+
+// Reject return
+router.post('/:id/reject-return', async (req, res) => {
+  try {
+    const borrowing = await prisma.borrowing.update({
+      where: { id: req.params.id },
+      data: {
+        status: 'active',
+        returnRequestedAt: null
+      },
+      include: {
+        book: true,
+        borrower: true
+      }
+    });
+    res.json(borrowing);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to reject return' });
+  }
+});
+
+// Pay fine
+router.post('/:id/pay-fine', async (req, res) => {
+  try {
+    // Get current borrowing to store original fine amount
+    const currentBorrowing = await prisma.borrowing.findUnique({
+      where: { id: req.params.id }
+    });
+    
+    const borrowing = await prisma.borrowing.update({
+      where: { id: req.params.id },
+      data: {
+        damageFee: currentBorrowing?.fine || 0, // Store original fine as damage fee for history
+        fine: 0,
+        status: 'returned',
+        returnedAt: new Date()
+      },
+      include: {
+        book: true,
+        borrower: true
+      }
+    });
+
+    // Update book count
+    await prisma.book.update({
+      where: { id: borrowing.bookId },
+      data: { count: { increment: 1 } }
+    });
+
+    res.json(borrowing);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to process fine payment' });
+  }
+});
+
 export default router;

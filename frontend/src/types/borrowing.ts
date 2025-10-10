@@ -32,8 +32,13 @@ export interface Borrowing {
   borrowedAt: string;
   dueDate: string;
   returnedAt?: string;
-  status: 'active' | 'returned' | 'overdue' | 'missing';
+  returnRequestedAt?: string;
+  returnApprovedAt?: string;
+  status: 'active' | 'returned' | 'overdue' | 'missing' | 'return_requested' | 'return_approved';
   fine?: number;
+  damageType?: string;
+  damageFee?: number;
+  fineBreakdownDetails?: { label: string; amount: number }[];
   book?: {
     id: string;
     title: string;

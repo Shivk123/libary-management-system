@@ -12,12 +12,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const { user } = await userService.signIn(email, password);
-      const role: UserRole = email === 'admin@library.com' ? 'admin' : 'user';
+      const role: UserRole = (user.role as UserRole) || (email === 'admin@library.com' ? 'admin' : 'user');
       const authUser: User = { ...user, role };
       
       setUser(authUser);
-      // Trigger a storage event to notify UserContext
-      window.dispatchEvent(new Event('storage'));
+      // Trigger custom event to notify UserContext
+      window.dispatchEvent(new Event('auth-change'));
       navigate(role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
     } catch (error) {
       console.error('Login failed:', error);
@@ -28,11 +28,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signup = async (name: string, email: string, password: string) => {
     try {
       const { user } = await userService.signUp(name, email, password);
-      const authUser: User = { ...user, role: 'user' };
+      const role: UserRole = (user.role as UserRole) || 'user';
+      const authUser: User = { ...user, role };
       
       setUser(authUser);
-      // Trigger a storage event to notify UserContext
-      window.dispatchEvent(new Event('storage'));
+      // Trigger custom event to notify UserContext
+      window.dispatchEvent(new Event('auth-change'));
       navigate('/user/dashboard');
     } catch (error) {
       console.error('Signup failed:', error);

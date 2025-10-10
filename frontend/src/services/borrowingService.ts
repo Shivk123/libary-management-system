@@ -36,7 +36,7 @@ export const borrowingService = {
 
     userBorrowingsPromises[userId] = (async () => {
       try {
-        const response = await api.get(`/borrowings/user/${userId}`);
+        const response = await api.get(`/users/${userId}/borrowings`);
         userBorrowingsCache[userId] = response.data;
         return response.data;
       } finally {
@@ -51,5 +51,28 @@ export const borrowingService = {
     const response = await api.put(`/borrowings/${borrowingId}/return`);
     userBorrowingsCache = {};
     return response.data;
+  },
+
+  async requestReturn(borrowingId: string): Promise<void> {
+    await api.post(`/borrowings/${borrowingId}/request-return`);
+    userBorrowingsCache = {};
+  },
+
+  async getReturnRequests(): Promise<any[]> {
+    const response = await api.get('/borrowings/return-requests');
+    return response.data;
+  },
+
+  async approveReturn(borrowingId: string, data: { damageType: string; fine: number }): Promise<void> {
+    await api.post(`/borrowings/${borrowingId}/approve-return`, data);
+  },
+
+  async rejectReturn(borrowingId: string): Promise<void> {
+    await api.post(`/borrowings/${borrowingId}/reject-return`);
+  },
+
+  async payFine(borrowingId: string): Promise<void> {
+    await api.post(`/borrowings/${borrowingId}/pay-fine`);
+    userBorrowingsCache = {};
   },
 };

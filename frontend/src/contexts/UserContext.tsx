@@ -106,14 +106,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const handleStorageChange = () => {
-      if (userService.isAuthenticated() && !state.user) {
+      if (userService.isAuthenticated() && !state.user && !state.loading) {
         loadUser();
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [state.user]);
+    // Also listen for custom auth events
+    window.addEventListener('auth-change', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('auth-change', handleStorageChange);
+    };
+  }, [state.user, state.loading]);
 
   const contextValue: UserContextType = {
     ...state,

@@ -69,8 +69,13 @@ model Borrowing {
   borrowedAt DateTime @default(now())
   dueDate    DateTime
   returnedAt DateTime?
-  status     String   @default("active") // 'active' | 'returned' | 'overdue' | 'missing'
+  status     String   @default("active") // 'active' | 'returned' | 'overdue' | 'missing' | 'return_requested' | 'return_approved'
   fine       Float?
+  damageType String?  // 'none' | 'small' | 'large'
+  damageFee  Float?
+  fineBreakdown String? // JSON string of fine breakdown
+  returnRequestedAt DateTime?
+  returnApprovedAt DateTime?
 
   book     Book   @relation(fields: [bookId], references: [id])
   borrower User   @relation(fields: [borrowerId], references: [id])

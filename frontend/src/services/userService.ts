@@ -61,6 +61,15 @@ export const userService = {
     return response.data;
   },
 
+  async createUser(userData: Omit<User, 'id'>): Promise<User> {
+    const response = await api.post('/users', userData);
+    return response.data;
+  },
+
+  async deleteUser(id: string): Promise<void> {
+    await api.delete(`/users/${id}`);
+  },
+
   async getCurrentUser(): Promise<User> {
     if (currentUserCache) {
       return currentUserCache;

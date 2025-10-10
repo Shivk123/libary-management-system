@@ -121,4 +121,76 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Get user borrowings with fine breakdown
+router.get('/:id/borrowings', async (req, res) => {
+  try {
+    const borrowings = await prisma.borrowing.findMany({
+      where: { borrowerId: req.params.id },
+      include: {
+        book: true,
+        group: true
+      },
+      orderBy: { borrowedAt: 'desc' }
+    });
+
+    const borrowingsWithBreakdown = borrowings.map(borrowing => {
+      let fineBreakdown = [];
+      try {
+        fineBreakdown = borrowing.fineBreakdown ? JSON.parse(borrowing.fineBreakdown) : [];
+      } catch (e) {
+        fineBreakdown = [];
+      }
+
+      return {
+        ...borrowing,
+        fineBreakdownDetails: fineBreakdown
+      };
+    });
+
+    res.json(borrowingsWithBreakdown);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch user borrowings' });
+  }
+});
+
+// Delete user
+router.delete('/:id', async (req, res) => {
+  try {
+    // Check if user has active borrowings
+    const activeBorrowings = await prisma.borrowing.count({
+      where: { 
+        borrowerId: req.params.id,
+        status: { in: ['active', 'overdue'] }
+      }
+    });
+    
+    if (activeBorrowings > 0) {
+      return res.status(400).json({ error: 'Cannot delete user with active borrowings' });
+    }
+    
+    // Delete related records first
+    await prisma.groupMember.deleteMany({
+      where: { userId: req.params.id }
+    });
+    
+    await prisma.borrowing.deleteMany({
+      where: { borrowerId: req.params.id }
+    });
+    
+    await prisma.group.deleteMany({
+      where: { createdBy: req.params.id }
+    });
+    
+    // Now delete the user
+    await prisma.user.delete({
+      where: { id: req.params.id }
+    });
+    
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
 export default router;

@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { Users, BookOpen, BarChart3 } from 'lucide-react';
+import { Users, BookOpen, BarChart3, RotateCcw } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardHome from '@/components/layout/DashboardHome';
 import BookCatalog from './BookCatalog';
 import UserManagement from './UserManagement';
 import Reports from './Reports';
+import ReturnRequests from './ReturnRequests';
 
 const menuItems = [
   { title: 'User Management', icon: Users, key: 'users' },
   { title: 'Book Catalog', icon: BookOpen, key: 'books' },
+  { title: 'Return Requests', icon: RotateCcw, key: 'returns' },
   { title: 'Reports', icon: BarChart3, key: 'reports' },
 ];
 
@@ -42,6 +44,8 @@ export default function AdminDashboard() {
         return <UserManagement />;
       case 'books':
         return <BookCatalog />;
+      case 'returns':
+        return <ReturnRequests />;
       case 'reports':
         return <Reports />;
       case 'dashboard':

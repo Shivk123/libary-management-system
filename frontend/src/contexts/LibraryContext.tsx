@@ -104,6 +104,10 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     });
     
     dispatch({ type: 'ADD_BORROWING', payload: borrowing });
+    
+    // Refresh books to update available count
+    const books = await booksService.getBooks();
+    dispatch({ type: 'SET_BOOKS', payload: books });
   };
 
   const refreshData = async () => {
