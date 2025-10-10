@@ -7,14 +7,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tilt } from '@/components/ui/tilt';
-import { Star, Edit } from 'lucide-react';
+import { Star, Edit, Plus } from 'lucide-react';
 import { useBooks } from '@/hooks/useBooks';
+import { booksService } from '@/services/booksService';
 import type { Book } from '@/data/books';
 
 export default function BookCatalog() {
-  const { books, loading, error, updateBook } = useBooks();
+  const { books, loading, error, updateBook, refreshBooks } = useBooks();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   
   const { register, handleSubmit, reset, setValue } = useForm<Book>();
 
@@ -38,33 +40,49 @@ export default function BookCatalog() {
   };
 
   const onSubmit = async (data: Book) => {
-    if (!selectedBook) return;
-    
     try {
-      await updateBook(selectedBook.id, data);
-      setIsEditing(false);
-      setSelectedBook(null);
+      if (isAdding) {
+        await booksService.createBook(data);
+        await refreshBooks();
+        setIsAdding(false);
+      } else if (selectedBook) {
+        await updateBook(selectedBook.id, data);
+        setIsEditing(false);
+        setSelectedBook(null);
+      }
       reset();
     } catch (err) {
-      console.error('Failed to update book:', err);
+      console.error('Failed to save book:', err);
     }
   };
 
   const handleCloseModal = () => {
     setSelectedBook(null);
     setIsEditing(false);
+    setIsAdding(false);
+    reset();
+  };
+
+  const handleAddBook = () => {
+    setIsAdding(true);
     reset();
   };
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-4xl font-serif font-bold tracking-tight mb-4">
-          Book Catalog Management
-        </h1>
-        <p className="text-xl font-sans text-muted-foreground">
-          Manage and edit book information in the library catalog
-        </p>
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-4xl font-serif font-bold tracking-tight mb-4">
+            Book Catalog Management
+          </h1>
+          <p className="text-xl font-sans text-muted-foreground">
+            Manage and edit book information in the library catalog
+          </p>
+        </div>
+        <Button onClick={handleAddBook} className="mt-4">
+          <Plus className="h-4 w-4 mr-2" />
+          Add New Book
+        </Button>
       </div>
 
       {loading && <div>Loading books...</div>}
@@ -122,17 +140,17 @@ export default function BookCatalog() {
         ))}
       </div>
 
-      <Dialog open={!!selectedBook} onOpenChange={handleCloseModal}>
+      <Dialog open={!!selectedBook || isAdding} onOpenChange={handleCloseModal}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          {selectedBook && (
+          {(selectedBook || isAdding) && (
             <>
               <DialogHeader>
                 <DialogTitle className="text-2xl font-serif">
-                  {isEditing ? 'Edit Book' : selectedBook.title}
+                  {isAdding ? 'Add New Book' : isEditing ? 'Edit Book' : selectedBook?.title}
                 </DialogTitle>
               </DialogHeader>
               
-              {isEditing ? (
+              {(isEditing || isAdding) ? (
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
@@ -179,6 +197,17 @@ export default function BookCatalog() {
                           type="number"
                           min="0"
                           {...register('count', { required: true, valueAsNumber: true })}
+                          className="text-base"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="price" className="text-base font-sans">Price (₹)</Label>
+                        <Input
+                          id="price"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          {...register('price', { required: true, valueAsNumber: true })}
                           className="text-base"
                         />
                       </div>

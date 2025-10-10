@@ -40,6 +40,7 @@ export function useBooks() {
     loading,
     error,
     updateBook,
+    refreshBooks: fetchBooks,
     refetch: fetchBooks,
   };
 }

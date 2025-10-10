@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Clock, Users, AlertTriangle, CheckCircle, IndianRupee, CreditCard } from 'lucide-react';
 import { useLibrary } from '@/contexts/LibraryContext';
 import { borrowingService } from '@/services/borrowingService';
@@ -214,6 +214,9 @@ export default function MyBorrowings() {
                               <DialogContent>
                                 <DialogHeader>
                                   <DialogTitle>Fine Payment Details</DialogTitle>
+                                  <DialogDescription>
+                                    Review and pay your fine for the returned book.
+                                  </DialogDescription>
                                 </DialogHeader>
                                 <div className="space-y-4">
                                   <div>

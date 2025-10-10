@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -205,6 +205,9 @@ export default function ReturnRequests() {
                           <DialogContent>
                             <DialogHeader>
                               <DialogTitle>Process Payment Request</DialogTitle>
+                              <DialogDescription>
+                                Assess damage and calculate fine for the returned book.
+                              </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4">
                               <div>
