@@ -44,10 +44,13 @@ export default function BrowseBooks() {
     
     setBorrowing(true);
     try {
+      const groupId = borrowingType === 'group' ? 
+        groups.find(g => g.name === selectedGroup)?.id : undefined;
+      
       await borrowBook(
         selectedBook.id,
         borrowingType,
-        borrowingType === 'group' ? selectedGroup : undefined
+        groupId
       );
       
       setSelectedBook(null);
