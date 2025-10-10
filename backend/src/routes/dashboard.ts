@@ -3,6 +3,74 @@ import { prisma } from '../server';
 
 const router = Router();
 
+// Get admin reports and analytics
+router.get('/reports', async (req, res) => {
+  try {
+    // Get popular books (most borrowed)
+    const popularBooks = await prisma.borrowing.groupBy({
+      by: ['bookId'],
+      _count: { bookId: true },
+      orderBy: { _count: { bookId: 'desc' } },
+      take: 5
+    });
+
+    const popularBooksWithDetails = await Promise.all(
+      popularBooks.map(async (item) => {
+        const book = await prisma.book.findUnique({ where: { id: item.bookId } });
+        return { book, borrowCount: item._count.bookId };
+      })
+    );
+
+    // Get fine statistics
+    const totalActiveFines = await prisma.borrowing.aggregate({
+      where: { fine: { gt: 0 } },
+      _sum: { fine: true },
+      _count: { fine: true }
+    });
+
+    const totalCollectedFines = await prisma.borrowing.aggregate({
+      where: { 
+        status: 'returned',
+        damageFee: { gt: 0 }
+      },
+      _sum: { damageFee: true },
+      _count: { damageFee: true }
+    });
+
+    // Get user statistics
+    const usersWithFines = await prisma.user.count({
+      where: {
+        borrowings: {
+          some: { fine: { gt: 0 } }
+        }
+      }
+    });
+
+    const totalUsers = await prisma.user.count({ where: { role: 'user' } });
+    const totalBooks = await prisma.book.count();
+    const activeBorrowings = await prisma.borrowing.count({ where: { status: 'active' } });
+
+    res.json({
+      popularBooks: popularBooksWithDetails,
+      fineStats: {
+        totalActiveFines: totalActiveFines._sum.fine || 0,
+        activeFinedUsers: totalActiveFines._count.fine || 0,
+        totalCollectedFines: totalCollectedFines._sum.damageFee || 0,
+        totalFinedUsers: usersWithFines
+      },
+      systemStats: {
+        totalBooks,
+        totalUsers,
+        activeBorrowings,
+        usersWithoutFines: totalUsers - usersWithFines
+      }
+    });
+  } catch (error) {
+    console.error('Reports error:', error);
+    res.status(500).json({ error: 'Failed to fetch reports data' });
+  }
+});
+
 // Get admin dashboard data with fine breakdown
 router.get('/admin', async (req, res) => {
   try {

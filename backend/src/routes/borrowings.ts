@@ -218,8 +218,9 @@ router.post('/:id/approve-return', async (req, res) => {
     const borrowing = await prisma.borrowing.update({
       where: { id: req.params.id },
       data: {
-        status: 'return_approved',
+        status: fine > 0 ? 'return_approved' : 'returned',
         returnApprovedAt: new Date(),
+        returnedAt: fine > 0 ? null : new Date(),
         damageType,
         damageFee: fine,
         fine,
@@ -230,6 +231,14 @@ router.post('/:id/approve-return', async (req, res) => {
         borrower: true
       }
     });
+
+    // If no fine, increment book count immediately
+    if (fine === 0) {
+      await prisma.book.update({
+        where: { id: borrowing.bookId },
+        data: { count: { increment: 1 } }
+      });
+    }
     res.json(borrowing);
   } catch (error) {
     res.status(500).json({ error: 'Failed to approve return' });
