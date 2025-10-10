@@ -168,7 +168,7 @@ export default function MyBorrowings() {
                               <Users className="h-4 w-4" />
                             )}
                             <span className="text-sm">
-                              {borrowing.type === 'individual' ? 'Individual' : group?.name}
+                              {borrowing.type === 'individual' ? 'Individual' : (group?.name || 'Group')}
                             </span>
                           </div>
                         </TableCell>
@@ -319,7 +319,7 @@ export default function MyBorrowings() {
                               <Users className="h-4 w-4" />
                             )}
                             <span className="text-sm">
-                              {borrowing.type === 'individual' ? 'Individual' : group?.name}
+                              {borrowing.type === 'individual' ? 'Individual' : (group?.name || 'Group')}
                             </span>
                           </div>
                         </TableCell>
