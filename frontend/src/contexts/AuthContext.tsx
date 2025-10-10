@@ -22,7 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Small delay to ensure UserContext updates before navigation
       setTimeout(() => {
         navigate(role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
-      }, 1000);
+      }, 3000);
     } catch (error) {
       console.error('Login failed:', error);
       alert('Invalid credentials. Please try again.');
