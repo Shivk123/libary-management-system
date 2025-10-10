@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -7,35 +7,63 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Users, Plus, UserPlus } from 'lucide-react';
-import { useGroups } from '@/hooks/useGroups';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Users, Plus } from 'lucide-react';
+import { useUserGroups } from '@/hooks/useUserGroups';
 import { userService } from '@/services/userService';
+import { groupsService } from '@/services/groupsService';
+import { useUser } from '@/contexts/UserContext';
 import type { Group } from '@/types/borrowing';
 
 interface GroupFormData {
   name: string;
   description: string;
-  members: string[];
 }
 
 export default function Groups() {
-  const { groups, loading, error } = useGroups();
+  const { groups, loading, error, refetch } = useUserGroups();
+  const { user: currentUser } = useUser();
   const [users, setUsers] = useState<any[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
   const { register, handleSubmit, reset } = useForm<GroupFormData>();
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-  const currentUser = userService.getCurrentUser();
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const allUsers = await userService.getUsers();
+        // Filter out admin users and current user from member selection
+        setUsers(allUsers.filter(u => u.role !== 'admin' && u.id !== currentUser?.id));
+      } catch (err) {
+        console.error('Failed to fetch users:', err);
+      }
+    };
+    if (isCreateOpen) {
+      fetchUsers();
+    }
+  }, [isCreateOpen, currentUser]);
 
   const onSubmit = async (data: GroupFormData) => {
+    if (!currentUser) return;
+    
     try {
-      // For now, just show success message - full implementation would create group via API
-      alert('Group creation functionality will be implemented soon!');
+      setCreating(true);
+      await groupsService.createGroup({
+        name: data.name,
+        description: data.description,
+        createdBy: currentUser.id,
+        members: [...selectedMembers, currentUser.id]
+      });
       setIsCreateOpen(false);
       reset();
       setSelectedMembers([]);
+      await refetch(); // Refresh to show new group
     } catch (err) {
       console.error('Failed to create group:', err);
       alert('Failed to create group. Please try again.');
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -101,10 +129,20 @@ export default function Groups() {
                   <p className="text-sm text-muted-foreground mb-3">
                     Groups need 3-6 members total (including you)
                   </p>
-                  <div className="p-3 border rounded-lg bg-muted">
-                    <p className="text-sm text-muted-foreground">
-                      Member selection will be available in the full implementation.
-                    </p>
+                  <div className="max-h-48 overflow-y-auto space-y-2 p-3 border rounded-lg">
+                    {users.map((user) => (
+                      <div key={user.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={user.id}
+                          checked={selectedMembers.includes(user.id)}
+                          onCheckedChange={() => toggleMember(user.id)}
+                          disabled={!selectedMembers.includes(user.id) && selectedMembers.length >= 5}
+                        />
+                        <Label htmlFor={user.id} className="text-sm">
+                          {user.name} ({user.email})
+                        </Label>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -112,9 +150,9 @@ export default function Groups() {
                 <Button 
                   type="submit" 
                   className="flex-1"
-                  disabled={selectedMembers.length < 2 || selectedMembers.length > 5}
+                  disabled={creating || selectedMembers.length < 2 || selectedMembers.length > 5}
                 >
-                  Create Group
+                  {creating ? 'Creating...' : 'Create Group'}
                 </Button>
                 <Button
                   type="button"

@@ -8,23 +8,23 @@ export function useUserGroups() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        setLoading(true);
-        const currentUser = await userService.getCurrentUser();
-        const data = await groupsService.getUserGroups(currentUser.id);
-        setGroups(data);
-        setError(null);
-      } catch (err) {
-        setError('Failed to load user groups');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchGroups = async () => {
+    try {
+      setLoading(true);
+      const currentUser = await userService.getCurrentUser();
+      const data = await groupsService.getUserGroups(currentUser.id);
+      setGroups(data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load user groups');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchGroups();
   }, []);
 
-  return { groups, loading, error };
+  return { groups, loading, error, refetch: fetchGroups };
 }
