@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { userService } from '@/services/userService';
 import type { User, UserRole, AuthContextType } from '@/types/auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -8,21 +9,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
-  const login = (email: string, password: string) => {
-    // Mock authentication logic
-    const role: UserRole = email.includes('admin') || email === 'admin@library.com' ? 'admin' : 'user';
-    const mockUser: User = {
-      id: '1',
-      name: email.split('@')[0],
-      email,
-      role
-    };
-    
-    setUser(mockUser);
-    navigate(role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
+  const login = async (email: string, password: string) => {
+    try {
+      const { user } = await userService.signIn(email, password);
+      const role: UserRole = email === 'admin@library.com' ? 'admin' : 'user';
+      const authUser: User = { ...user, role };
+      
+      setUser(authUser);
+      // Trigger a storage event to notify UserContext
+      window.dispatchEvent(new Event('storage'));
+      navigate(role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
+    } catch (error) {
+      console.error('Login failed:', error);
+      alert('Invalid credentials. Please try again.');
+    }
   };
 
-  const logout = () => {
+  const signup = async (name: string, email: string, password: string) => {
+    try {
+      const { user } = await userService.signUp(name, email, password);
+      const authUser: User = { ...user, role: 'user' };
+      
+      setUser(authUser);
+      // Trigger a storage event to notify UserContext
+      window.dispatchEvent(new Event('storage'));
+      navigate('/user/dashboard');
+    } catch (error) {
+      console.error('Signup failed:', error);
+      alert('Signup failed. Please try again.');
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await userService.signOut();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
     setUser(null);
     navigate('/signin');
   };
@@ -31,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{
       user,
       login,
+      signup,
       logout,
       isAuthenticated: !!user
     }}>

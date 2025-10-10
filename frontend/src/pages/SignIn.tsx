@@ -10,10 +10,16 @@ export default function SignIn() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(email, password);
+    setLoading(true);
+    try {
+      await login(email, password);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -57,8 +63,8 @@ export default function SignIn() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
-              Sign in
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign in'}
             </Button>
           </form>
           <div className="text-center">

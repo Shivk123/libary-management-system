@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Users, AlertTriangle, CheckCircle, IndianRupee } from 'lucide-react';
 import { useLibrary } from '@/contexts/LibraryContext';
@@ -65,7 +66,24 @@ export default function MyBorrowings() {
         </p>
       </div>
 
-      {loading.borrowings && <div>Loading borrowings...</div>}
+      {loading.borrowings && (
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 p-4 border rounded">
+                <Skeleton className="w-12 h-16" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+                <Skeleton className="h-6 w-16" />
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-8 w-20" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
       {error && <div>Error: {error}</div>}
       
       <Tabs defaultValue="active" className="w-full">

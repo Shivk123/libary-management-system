@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
 import type { User } from '@/lib/schemas';
 import { userService } from '@/services/userService';
+import { LoadingDashboard } from '@/components/LoadingDashboard';
 
 interface UserState {
   user: User | null;
@@ -55,7 +56,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(userReducer, initialState);
 
   const loadUser = async () => {
-    if (state.isSignedOut) return;
+    if (state.isSignedOut) {
+      dispatch({ type: 'SET_LOADING', payload: false });
+      return;
+    }
+    
+    if (!userService.isAuthenticated()) {
+      dispatch({ type: 'SIGN_OUT' });
+      return;
+    }
     
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
@@ -63,7 +72,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'SET_USER', payload: user });
       dispatch({ type: 'SET_ERROR', payload: null });
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to load user' });
+      dispatch({ type: 'SIGN_OUT' });
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
@@ -80,8 +89,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
     await loadUser();
   };
 
-  const signOut = () => {
-    userService.clearCache();
+  const signOut = async () => {
+    try {
+      await userService.signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
     dispatch({ type: 'SIGN_OUT' });
   };
 
@@ -91,12 +104,25 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   }, [state.isSignedOut]);
 
+  useEffect(() => {
+    const handleStorageChange = () => {
+      if (userService.isAuthenticated() && !state.user) {
+        loadUser();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [state.user]);
+
   const contextValue: UserContextType = {
     ...state,
     updateUser,
     refreshUser,
     signOut,
   };
+
+
 
   return (
     <UserContext.Provider value={contextValue}>

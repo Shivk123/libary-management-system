@@ -13,6 +13,39 @@ export const userService = {
   clearCache() {
     currentUserCache = null;
     currentUserPromise = null;
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUser');
+  },
+
+  async signIn(email: string, password: string): Promise<{ user: User; token: string }> {
+    const response = await api.post('/users/signin', { email, password });
+    const { user, token } = response.data;
+    
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    currentUserCache = user;
+    
+    return { user, token };
+  },
+
+  async signUp(name: string, email: string, password: string): Promise<{ user: User; token: string }> {
+    const response = await api.post('/users/signup', { name, email, password });
+    const { user, token } = response.data;
+    
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    currentUserCache = user;
+    
+    return { user, token };
+  },
+
+  async signOut(): Promise<void> {
+    try {
+      await api.post('/users/signout');
+    } catch (error) {
+      // Continue with sign out even if API call fails
+    }
+    this.clearCache();
   },
   async getUsers(): Promise<User[]> {
     const response = await api.get('/users');
@@ -25,40 +58,39 @@ export const userService = {
     return response.data;
   },
 
-  // For demo purposes - in a real app this would come from authentication
   async getCurrentUser(): Promise<User> {
-    // Return cached user if available
     if (currentUserCache) {
       return currentUserCache;
     }
 
-    // Return existing promise if one is already in progress
     if (currentUserPromise) {
       return currentUserPromise;
     }
 
-    // Create new promise and cache it
     currentUserPromise = (async () => {
       try {
-        const users = await this.getUsers();
-        const johnDoe = users.find(user => user.email === 'john@example.com');
-        const user = johnDoe || users[0];
+        const storedUser = localStorage.getItem('currentUser');
+        const token = localStorage.getItem('authToken');
+        
+        if (!storedUser || !token) {
+          throw new Error('No authenticated user');
+        }
+        
+        const user = JSON.parse(storedUser);
         currentUserCache = user;
         return user;
       } catch (error) {
-        // Fallback for offline/error scenarios
-        const fallbackUser = {
-          id: 'temp-user-id',
-          name: 'John Doe',
-          email: 'john@example.com'
-        };
-        currentUserCache = fallbackUser;
-        return fallbackUser;
+        this.clearCache();
+        throw new Error('Authentication required');
       } finally {
         currentUserPromise = null;
       }
     })();
 
     return currentUserPromise;
+  },
+
+  isAuthenticated(): boolean {
+    return !!(localStorage.getItem('authToken') && localStorage.getItem('currentUser'));
   },
 };

@@ -1,22 +1,28 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function SignUp() {
-  const navigate = useNavigate();
+  const { signup } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: ''
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // New users default to regular user role
-    navigate('/user/dashboard');
+    setLoading(true);
+    try {
+      await signup(formData.name, formData.email, formData.password);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,8 +87,8 @@ export default function SignUp() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full h-11 mt-6">
-              Create account
+            <Button type="submit" className="w-full h-11 mt-6" disabled={loading}>
+              {loading ? 'Creating account...' : 'Create account'}
             </Button>
           </form>
           <div className="text-center pt-4 border-t">
