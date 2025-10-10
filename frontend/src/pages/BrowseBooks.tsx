@@ -6,17 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tilt } from '@/components/ui/tilt';
 import SearchInput from '@/components/shared/SearchInput';
 import { Star, Clock, Users } from 'lucide-react';
-import { useBooks } from '@/hooks/useBooks';
-import { useUserGroups } from '@/hooks/useUserGroups';
-import { useBorrowings } from '@/hooks/useBorrowings';
-import { borrowingService } from '@/services/borrowingService';
-import { userService } from '@/services/userService';
-import type { Book } from '@/data/books';
+import { useLibrary } from '@/contexts/LibraryContext';
+import type { Book } from '@/lib/schemas';
 
 export default function BrowseBooks() {
-  const { books, loading, error } = useBooks();
-  const { groups } = useUserGroups();
-  const { borrowings } = useBorrowings();
+  const { books, groups, borrowings, loading, error, borrowBook } = useLibrary();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [borrowingType, setBorrowingType] = useState<'individual' | 'group'>('individual');
   const [selectedGroup, setSelectedGroup] = useState<string>('');
@@ -50,16 +44,12 @@ export default function BrowseBooks() {
     
     setBorrowing(true);
     try {
-      const currentUser = await userService.getCurrentUser();
+      await borrowBook(
+        selectedBook.id,
+        borrowingType,
+        borrowingType === 'group' ? selectedGroup : undefined
+      );
       
-      await borrowingService.borrowBook({
-        bookId: selectedBook.id,
-        borrowerId: currentUser.id,
-        type: borrowingType,
-        groupId: borrowingType === 'group' ? selectedGroup : undefined,
-      });
-      
-      // Close dialog and reset state
       setSelectedBook(null);
       setBorrowingType('individual');
       setSelectedGroup('');
@@ -93,7 +83,7 @@ export default function BrowseBooks() {
         />
       </div>
 
-      {loading && <div>Loading books...</div>}
+      {loading.books && <div>Loading books...</div>}
       {error && <div>Error: {error}</div>}
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
