@@ -4,8 +4,10 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Create admin user
-  const admin = await prisma.user.create({ 
-    data: { 
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@library.com' },
+    update: {},
+    create: { 
       name: 'Admin User', 
       email: 'admin@library.com', 
       password: 'admin123',
@@ -15,12 +17,12 @@ async function main() {
 
   // Create regular users
   const users = await Promise.all([
-    prisma.user.create({ data: { name: 'John Doe', email: 'john@example.com', password: 'john123' } }),
-    prisma.user.create({ data: { name: 'Jane Smith', email: 'jane@example.com', password: 'jane123' } }),
-    prisma.user.create({ data: { name: 'Mike Johnson', email: 'mike@example.com', password: 'mike123' } }),
-    prisma.user.create({ data: { name: 'Sarah Wilson', email: 'sarah@example.com', password: 'sarah123' } }),
-    prisma.user.create({ data: { name: 'Tom Brown', email: 'tom@example.com', password: 'tom123' } }),
-    prisma.user.create({ data: { name: 'Lisa Davis', email: 'lisa@example.com', password: 'lisa123' } })
+    prisma.user.upsert({ where: { email: 'john@example.com' }, update: {}, create: { name: 'John Doe', email: 'john@example.com', password: 'john123' } }),
+    prisma.user.upsert({ where: { email: 'jane@example.com' }, update: {}, create: { name: 'Jane Smith', email: 'jane@example.com', password: 'jane123' } }),
+    prisma.user.upsert({ where: { email: 'mike@example.com' }, update: {}, create: { name: 'Mike Johnson', email: 'mike@example.com', password: 'mike123' } }),
+    prisma.user.upsert({ where: { email: 'sarah@example.com' }, update: {}, create: { name: 'Sarah Wilson', email: 'sarah@example.com', password: 'sarah123' } }),
+    prisma.user.upsert({ where: { email: 'tom@example.com' }, update: {}, create: { name: 'Tom Brown', email: 'tom@example.com', password: 'tom123' } }),
+    prisma.user.upsert({ where: { email: 'lisa@example.com' }, update: {}, create: { name: 'Lisa Davis', email: 'lisa@example.com', password: 'lisa123' } })
   ]);
 
   // Create books

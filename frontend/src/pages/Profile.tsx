@@ -24,7 +24,7 @@ export default function Profile() {
   const { borrowings } = useBorrowings();
   const { groups } = useGroups();
   const [isEditing, setIsEditing] = useState(false);
-  const { register, handleSubmit, reset } = useForm<ProfileFormData>();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<ProfileFormData>();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -33,8 +33,8 @@ export default function Profile() {
       reset({
         name: user.name,
         email: user.email,
-        phone: '+91 98765 43210',
-        address: '123 Library St, Mumbai, MH 400001'
+        phone: user.phone || '',
+        address: user.address || ''
       });
     };
     fetchUser();
@@ -50,7 +50,9 @@ export default function Profile() {
     try {
       await userService.updateUser(currentUser.id, {
         name: data.name,
-        email: data.email
+        email: data.email,
+        phone: data.phone,
+        address: data.address
       });
       setIsEditing(false);
       alert('Profile updated successfully!');
@@ -89,7 +91,7 @@ export default function Profile() {
                   </Button>
                 ) : (
                   <div className="flex gap-2">
-                    <Button size="sm" onClick={handleSubmit(onSubmit)}>
+                    <Button size="sm" onClick={handleSubmit(onSubmit)} disabled={Object.keys(errors).length > 0}>
                       <Save className="h-4 w-4 mr-2" />
                       Save
                     </Button>
@@ -124,20 +126,31 @@ export default function Profile() {
                     <Label htmlFor="name" className="text-base font-sans">Full Name</Label>
                     <Input
                       id="name"
-                      {...register('name')}
+                      {...register('name', { 
+                        required: 'Name is required',
+                        minLength: { value: 2, message: 'Name must be at least 2 characters' }
+                      })}
                       disabled={!isEditing}
                       className="text-base"
                     />
+                    {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
                   </div>
                   <div>
                     <Label htmlFor="email" className="text-base font-sans">Email Address</Label>
                     <Input
                       id="email"
                       type="email"
-                      {...register('email')}
+                      {...register('email', {
+                        required: 'Email is required',
+                        pattern: {
+                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                          message: 'Invalid email address'
+                        }
+                      })}
                       disabled={!isEditing}
                       className="text-base"
                     />
+                    {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
                   </div>
                 </div>
                 
@@ -146,19 +159,30 @@ export default function Profile() {
                     <Label htmlFor="phone" className="text-base font-sans">Phone Number</Label>
                     <Input
                       id="phone"
-                      {...register('phone')}
+                      {...register('phone', {
+                        pattern: {
+                          value: /^[+]?[0-9\s-()]{10,15}$/,
+                          message: 'Invalid phone number format'
+                        }
+                      })}
                       disabled={!isEditing}
                       className="text-base"
+                      placeholder="+91 98765 43210"
                     />
+                    {errors.phone && <p className="text-sm text-red-600">{errors.phone.message}</p>}
                   </div>
                   <div>
                     <Label htmlFor="address" className="text-base font-sans">Address</Label>
                     <Input
                       id="address"
-                      {...register('address')}
+                      {...register('address', {
+                        minLength: { value: 10, message: 'Address must be at least 10 characters' }
+                      })}
                       disabled={!isEditing}
                       className="text-base"
+                      placeholder="Enter your full address"
                     />
+                    {errors.address && <p className="text-sm text-red-600">{errors.address.message}</p>}
                   </div>
                 </div>
               </form>
