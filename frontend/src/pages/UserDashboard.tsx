@@ -1,18 +1,16 @@
 import { useState } from 'react';
-import { Search, BookOpen, Clock, User, Users } from 'lucide-react';
+import { Search, BookOpen, User, Users } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import DashboardHome from '@/components/layout/DashboardHome';
 import BrowseBooks from './BrowseBooks';
 import Groups from './Groups';
 import MyBorrowings from './MyBorrowings';
-import History from './History';
 import Profile from './Profile';
 
 const menuItems = [
   { title: 'Browse Books', icon: Search, key: 'browse' },
   { title: 'My Groups', icon: Users, key: 'groups' },
   { title: 'My Borrowings', icon: BookOpen, key: 'borrowings' },
-  { title: 'History', icon: Clock, key: 'history' },
   { title: 'Profile', icon: User, key: 'profile' },
 ];
 
@@ -48,8 +46,6 @@ export default function UserDashboard() {
         return <Groups />;
       case 'borrowings':
         return <MyBorrowings />;
-      case 'history':
-        return <History />;
       case 'profile':
         return <Profile />;
       case 'dashboard':

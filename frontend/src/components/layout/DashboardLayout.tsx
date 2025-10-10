@@ -17,7 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { LogOut, Home } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useUser } from '@/contexts/UserContext';
 
 interface MenuItem {
   title: string;
@@ -40,7 +40,7 @@ export default function DashboardLayout({
   activeView,
   onViewChange
 }: DashboardLayoutProps) {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useUser();
 
   return (
     <SidebarProvider>
@@ -95,7 +95,7 @@ export default function DashboardLayout({
           <SidebarFooter className="border-t p-4">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={logout} className="text-base font-sans">
+                <SidebarMenuButton onClick={signOut} className="text-base font-sans">
                   <LogOut className="h-5 w-5" />
                   <span>Sign out</span>
                 </SidebarMenuButton>

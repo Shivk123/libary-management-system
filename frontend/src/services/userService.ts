@@ -10,6 +10,10 @@ let currentUserCache: User | null = null;
 let currentUserPromise: Promise<User> | null = null;
 
 export const userService = {
+  clearCache() {
+    currentUserCache = null;
+    currentUserPromise = null;
+  },
   async getUsers(): Promise<User[]> {
     const response = await api.get('/users');
     return response.data;
@@ -17,6 +21,7 @@ export const userService = {
 
   async updateUser(id: string, userData: Partial<User>): Promise<User> {
     const response = await api.put(`/users/${id}`, userData);
+    currentUserCache = null;
     return response.data;
   },
 

@@ -6,24 +6,27 @@ interface UserState {
   user: User | null;
   loading: boolean;
   error: string | null;
+  isSignedOut: boolean;
 }
 
 type UserAction =
   | { type: 'SET_USER'; payload: User }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
-  | { type: 'UPDATE_USER'; payload: Partial<User> };
+  | { type: 'UPDATE_USER'; payload: Partial<User> }
+  | { type: 'SIGN_OUT' };
 
 const initialState: UserState = {
   user: null,
   loading: true,
   error: null,
+  isSignedOut: false,
 };
 
 function userReducer(state: UserState, action: UserAction): UserState {
   switch (action.type) {
     case 'SET_USER':
-      return { ...state, user: action.payload };
+      return { ...state, user: action.payload, isSignedOut: false };
     case 'SET_LOADING':
       return { ...state, loading: action.payload };
     case 'SET_ERROR':
@@ -33,6 +36,8 @@ function userReducer(state: UserState, action: UserAction): UserState {
         ...state, 
         user: state.user ? { ...state.user, ...action.payload } : null 
       };
+    case 'SIGN_OUT':
+      return { user: null, loading: false, error: null, isSignedOut: true };
     default:
       return state;
   }
@@ -41,6 +46,7 @@ function userReducer(state: UserState, action: UserAction): UserState {
 interface UserContextType extends UserState {
   updateUser: (userData: Partial<User>) => Promise<void>;
   refreshUser: () => Promise<void>;
+  signOut: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -49,6 +55,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(userReducer, initialState);
 
   const loadUser = async () => {
+    if (state.isSignedOut) return;
+    
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const user = await userService.getCurrentUser();
@@ -72,14 +80,22 @@ export function UserProvider({ children }: { children: ReactNode }) {
     await loadUser();
   };
 
+  const signOut = () => {
+    userService.clearCache();
+    dispatch({ type: 'SIGN_OUT' });
+  };
+
   useEffect(() => {
-    loadUser();
-  }, []);
+    if (!state.isSignedOut) {
+      loadUser();
+    }
+  }, [state.isSignedOut]);
 
   const contextValue: UserContextType = {
     ...state,
     updateUser,
     refreshUser,
+    signOut,
   };
 
   return (
