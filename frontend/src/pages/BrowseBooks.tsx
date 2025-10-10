@@ -1,14 +1,13 @@
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tilt } from '@/components/ui/tilt';
-import { Star, Clock, Users, Search } from 'lucide-react';
+import SearchInput from '@/components/shared/SearchInput';
+import { Star, Clock, Users } from 'lucide-react';
 import { useBooks } from '@/hooks/useBooks';
-import { useGroups } from '@/hooks/useGroups';
+import { useUserGroups } from '@/hooks/useUserGroups';
 import { useBorrowings } from '@/hooks/useBorrowings';
 import { borrowingService } from '@/services/borrowingService';
 import { userService } from '@/services/userService';
@@ -16,7 +15,7 @@ import type { Book } from '@/data/books';
 
 export default function BrowseBooks() {
   const { books, loading, error } = useBooks();
-  const { groups } = useGroups();
+  const { groups } = useUserGroups();
   const { borrowings } = useBorrowings();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [borrowingType, setBorrowingType] = useState<'individual' | 'group'>('individual');
@@ -51,7 +50,7 @@ export default function BrowseBooks() {
     
     setBorrowing(true);
     try {
-      const currentUser = userService.getCurrentUser();
+      const currentUser = await userService.getCurrentUser();
       
       await borrowingService.borrowBook({
         bookId: selectedBook.id,
@@ -86,16 +85,12 @@ export default function BrowseBooks() {
         </p>
       </div>
 
-      <div className="mb-6">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search books by title or author..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+      <div className="mb-6 flex justify-center">
+        <SearchInput
+          placeholder="Search books by title or author..."
+          value={searchTerm}
+          onChange={setSearchTerm}
+        />
       </div>
 
       {loading && <div>Loading books...</div>}
@@ -150,6 +145,9 @@ export default function BrowseBooks() {
                 <DialogTitle className="text-xl font-serif pr-8">
                   {selectedBook.title}
                 </DialogTitle>
+                <DialogDescription>
+                  Book details and borrowing options
+                </DialogDescription>
               </DialogHeader>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="flex justify-center">

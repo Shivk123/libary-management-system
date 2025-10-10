@@ -5,8 +5,22 @@ export interface Group {
   name: string;
   description: string;
   createdBy: string;
-  members: string[];
-  createdAt: Date;
+  createdAt: string;
+  creator: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  members: {
+    id: string;
+    userId: string;
+    groupId: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+  }[];
 }
 
 export interface Borrowing {

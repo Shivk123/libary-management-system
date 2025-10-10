@@ -23,6 +23,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { bookId, borrowerId, type, groupId } = req.body;
+    console.log('Borrowing request:', { bookId, borrowerId, type, groupId });
     
     // Check if user already has this book borrowed
     const existingBorrowing = await prisma.borrowing.findFirst({
@@ -35,6 +36,26 @@ router.post('/', async (req, res) => {
     
     if (existingBorrowing) {
       return res.status(400).json({ error: 'You have already borrowed this book' });
+    }
+    
+    // For group borrowing, validate that user is a member of the group
+    if (type === 'group') {
+      if (!groupId) {
+        return res.status(400).json({ error: 'Group ID is required for group borrowing' });
+      }
+      
+      console.log('Checking group membership for user:', borrowerId, 'in group:', groupId);
+      const groupMember = await prisma.groupMember.findFirst({
+        where: {
+          groupId,
+          userId: borrowerId
+        }
+      });
+      
+      console.log('Group member found:', !!groupMember);
+      if (!groupMember) {
+        return res.status(400).json({ error: 'You are not a member of this group' });
+      }
     }
     
     // Calculate due date (30 days for individual, 6 months for group)
@@ -50,7 +71,7 @@ router.post('/', async (req, res) => {
         bookId,
         borrowerId,
         type,
-        groupId,
+        groupId: type === 'group' ? groupId : null,
         dueDate
       },
       include: {
@@ -68,6 +89,7 @@ router.post('/', async (req, res) => {
 
     res.status(201).json(borrowing);
   } catch (error) {
+    console.error('Borrowing error:', error);
     res.status(500).json({ error: 'Failed to create borrowing' });
   }
 });

@@ -11,7 +11,7 @@ export function useBorrowings() {
   const fetchBorrowings = async () => {
     try {
       setLoading(true);
-      const currentUser = userService.getCurrentUser();
+      const currentUser = await userService.getCurrentUser();
       const data = await borrowingService.getUserBorrowings(currentUser.id);
       setBorrowings(data);
       setError(null);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Edit, Save, X, BookOpen, Users, Clock, IndianRupee } from 'lucide-react';
 import { useBorrowings } from '@/hooks/useBorrowings';
 import { useGroups } from '@/hooks/useGroups';
-import { userService } from '@/services/userService';
+import { userService, type User } from '@/services/userService';
 
 interface ProfileFormData {
   name: string;
@@ -20,18 +20,25 @@ interface ProfileFormData {
 }
 
 export default function Profile() {
-  const currentUser = userService.getCurrentUser();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const { borrowings } = useBorrowings();
   const { groups } = useGroups();
   const [isEditing, setIsEditing] = useState(false);
-  const { register, handleSubmit, reset } = useForm<ProfileFormData>({
-    defaultValues: {
-      name: currentUser.name,
-      email: currentUser.email,
-      phone: '+91 98765 43210',
-      address: '123 Library St, Mumbai, MH 400001'
-    }
-  });
+  const { register, handleSubmit, reset } = useForm<ProfileFormData>();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await userService.getCurrentUser();
+      setCurrentUser(user);
+      reset({
+        name: user.name,
+        email: user.email,
+        phone: '+91 98765 43210',
+        address: '123 Library St, Mumbai, MH 400001'
+      });
+    };
+    fetchUser();
+  }, [reset]);
 
   const activeBorrowings = borrowings.filter(b => b.status === 'active' || b.status === 'overdue').length;
   const totalBorrowings = borrowings.length;
@@ -39,6 +46,7 @@ export default function Profile() {
   const totalFines = borrowings.reduce((sum, b) => sum + (b.fine || 0), 0);
 
   const onSubmit = async (data: ProfileFormData) => {
+    if (!currentUser) return;
     try {
       await userService.updateUser(currentUser.id, {
         name: data.name,
@@ -97,11 +105,11 @@ export default function Profile() {
               <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20">
                   <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                    {currentUser.name.charAt(0).toUpperCase()}
+                    {currentUser?.name.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-xl font-serif font-semibold">{currentUser.name}</h3>
+                  <h3 className="text-xl font-serif font-semibold">{currentUser?.name || 'Loading...'}</h3>
                   <Badge variant="secondary" className="mt-1">
                     Library Member
                   </Badge>

@@ -60,6 +60,31 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Get groups for a specific user
+router.get('/user/:userId', async (req, res) => {
+  try {
+    console.log('Fetching groups for user:', req.params.userId);
+    const groups = await prisma.group.findMany({
+      where: {
+        members: {
+          some: {
+            userId: req.params.userId
+          }
+        }
+      },
+      include: {
+        creator: true,
+        members: { include: { user: true } }
+      }
+    });
+    console.log('Found groups:', groups.length);
+    res.json(groups);
+  } catch (error) {
+    console.error('Error fetching user groups:', error);
+    res.status(500).json({ error: 'Failed to fetch user groups' });
+  }
+});
+
 // Add member to group
 router.post('/:id/members', async (req, res) => {
   try {
@@ -74,6 +99,22 @@ router.post('/:id/members', async (req, res) => {
     res.status(201).json(member);
   } catch (error) {
     res.status(500).json({ error: 'Failed to add member' });
+  }
+});
+
+// Debug endpoint to check database state
+router.get('/debug/all', async (req, res) => {
+  try {
+    const users = await prisma.user.findMany();
+    const groups = await prisma.group.findMany({
+      include: {
+        creator: true,
+        members: { include: { user: true } }
+      }
+    });
+    res.json({ users, groups });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch debug data' });
   }
 });
 
