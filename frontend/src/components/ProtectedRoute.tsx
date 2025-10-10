@@ -3,9 +3,10 @@ import { useUser } from '@/contexts/UserContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requiredRole?: 'admin' | 'user';
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const { user, loading } = useUser();
 
   if (loading) {
@@ -18,6 +19,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (!user) {
     return <Navigate to="/signin" replace />;
+  }
+
+  if (requiredRole && user.role !== requiredRole) {
+    return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/user/dashboard'} replace />;
   }
 
   return <>{children}</>;

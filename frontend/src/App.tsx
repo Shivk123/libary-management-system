@@ -19,12 +19,12 @@ function App() {
               <Route path="/signin" element={<SignIn />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/admin/dashboard" element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="admin">
                   <AdminDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/user/dashboard" element={
-                <ProtectedRoute>
+                <ProtectedRoute requiredRole="user">
                   <UserDashboard />
                 </ProtectedRoute>
               } />
