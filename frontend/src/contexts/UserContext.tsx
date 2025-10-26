@@ -45,6 +45,8 @@ function userReducer(state: UserState, action: UserAction): UserState {
 }
 
 interface UserContextType extends UserState {
+  login: (email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<void>;
   updateUser: (userData: Partial<User>) => Promise<void>;
   refreshUser: () => Promise<void>;
   signOut: () => void;
@@ -89,6 +91,36 @@ export function UserProvider({ children }: { children: ReactNode }) {
     await loadUser();
   };
 
+  const login = async (email: string, password: string) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      const { user } = await userService.signIn(email, password);
+      dispatch({ type: 'SET_USER', payload: user });
+      dispatch({ type: 'SET_ERROR', payload: null });
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Invalid credentials. Please try again.';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      throw error;
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  };
+
+  const signup = async (name: string, email: string, password: string) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      const { user } = await userService.signUp(name, email, password);
+      dispatch({ type: 'SET_USER', payload: user });
+      dispatch({ type: 'SET_ERROR', payload: null });
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Signup failed. Please try again.';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      throw error;
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  };
+
   const signOut = async () => {
     try {
       await userService.signOut();
@@ -122,6 +154,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const contextValue: UserContextType = {
     ...state,
+    login,
+    signup,
     updateUser,
     refreshUser,
     signOut,
